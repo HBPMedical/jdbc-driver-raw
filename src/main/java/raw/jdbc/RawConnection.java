@@ -24,9 +24,9 @@ public class RawConnection implements Connection {
     RawConnection(String url, String oAuthUri, String redirectUri, String user)
             throws OAuthSystemException, OAuthProblemException {
 
-        OAuthClientRequest request = OAuthClientRequest
+        /*OAuthClientRequest request = OAuthClientRequest
                 .authorizationLocation(oAuthUri)
-                .setClientId(user)
+                .setResponseType()
                 .setRedirectURI(redirectUri)
                 .buildQueryMessage();
 
@@ -34,7 +34,7 @@ public class RawConnection implements Connection {
         GitHubTokenResponse oAuthResponse = oAuthClient.accessToken(request, GitHubTokenResponse.class);
         accessToken = oAuthResponse.getAccessToken();
         expiresIn = oAuthResponse.getExpiresIn();
-        executerUrl = url;
+        executerUrl = url;*/
     }
 
     public Statement createStatement() throws SQLException {
