@@ -12,7 +12,7 @@ public class OAuth2Details {
     private String password;
     private String authenticationServerUrl;
 
-    OAuth2Details(
+    public OAuth2Details(
             String authenticationServerUrl,
             String scope,
             String grantType,

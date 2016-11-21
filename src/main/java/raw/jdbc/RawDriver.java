@@ -1,10 +1,19 @@
 package raw.jdbc;
 
 import oauth.OAuth2Details;
+import oauth.OAuthConstants;
+import oauth.OAuthUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -13,25 +22,44 @@ public class RawDriver implements Driver {
 
     @SuppressWarnings("Since15")
     public Connection connect(String url, Properties info) throws SQLException {
-        String authUri = info.getProperty("authentication_server_url");
-        String clientSecret = info.getProperty("client_secret");
-        String clientId = info.getProperty("client_id");
-        String username = info.getProperty("username");
-        String password = info.getProperty("password");
-
-        OAuth2Details oAuth2Details = new OAuth2Details(authUri,
-                );
         try {
-            return new RawConnection();
+            OAuth2Details oauthDetails = getOauthDetails(url, info);
+
+            return new RawConnection(oauthDetails);
+
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new SQLException("Could not connect", e);
+            throw new SQLException(e.getMessage(), e);
         }
     }
 
-    private String getToken(String url, Properties info) {
+    private static OAuth2Details getOauthDetails(String url, Properties info) throws URISyntaxException {
+        //Parses url parameters into a Map
+        Map<String, String> params = new HashMap<String, String>();
+        List<NameValuePair> paramList = URLEncodedUtils.parse(new URI(url), "UTF-8");
+        for (NameValuePair nvp : paramList) {
+            params.put(nvp.getName(), nvp.getValue());
+        }
 
+        String[] properties = {
+                OAuthConstants.AUTHENTICATION_SERVER_URL,
+                OAuthConstants.GRANT_TYPE,
+                OAuthConstants.SCOPE,
+                OAuthConstants.CLIENT_ID,
+                OAuthConstants.CLIENT_SECRET,
+                OAuthConstants.USERNAME,
+                OAuthConstants.PASSWORD
+        };
 
+        // copies all relevant properties giving priority to the ones defined in the url
+        Properties finalInfo = new Properties();
+        for (String prop : properties) {
+            if (params.containsKey(prop)) {
+                finalInfo.setProperty(prop, params.get(prop));
+            } else if (info.containsKey(prop)) {
+                finalInfo.setProperty(prop, info.getProperty(prop));
+            }
+        }
+        return OAuthUtils.createOAuthDetails(finalInfo);
     }
 
     public boolean acceptsURL(String url) throws SQLException {
@@ -39,7 +67,7 @@ public class RawDriver implements Driver {
     }
 
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return new DriverPropertyInfo[0];
+        throw new UnsupportedOperationException("not implemented");
     }
 
     public int getMajorVersion() {

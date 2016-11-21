@@ -1,20 +1,27 @@
+import oauth.OAuth2Details;
+import oauth.OAuthUtils;
 import org.junit.Test;
-import raw.jdbc.RawDriver;
 
-import java.sql.Connection;
-import java.sql.Driver;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Properties;
 
 public class TestConnection {
     @Test
-    public void testGetToken() throws SQLException {
+    public void testGetToken() throws IOException {
 
         Properties info = new Properties();
-        info.setProperty("oAuthUri", "http://localhost:9000/oauth2/authenticate");
-        info.setProperty("userId", "userId");
 
+        info.setProperty("authentication_server_url", "http://localhost:9000/oauth2/access_token");
+        info.setProperty("client_id", "raw-jdbc");
+        info.setProperty("grant_type", "password");
+        info.setProperty("username", "cesar.matos@gmail.com");
+        info.setProperty("password", "Mordor@1975");
 
+        OAuth2Details oauthDetails = OAuthUtils.createOAuthDetails(info);
+
+        String token = OAuthUtils.getTokenClientSecret(oauthDetails );
+        System.out.print("token: " + token);
 
     }
 }

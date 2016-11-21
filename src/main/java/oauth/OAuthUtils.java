@@ -41,22 +41,21 @@ import org.xml.sax.SAXException;
 public class OAuthUtils {
 
     public static OAuth2Details createOAuthDetails(Properties config) {
-        OAuth2Details oauthDetails = new OAuth2Details();
+
+        OAuth2Details oauthDetails = new OAuth2Details(
+                config.getProperty(OAuthConstants.AUTHENTICATION_SERVER_URL),
+                config.getProperty(OAuthConstants.SCOPE),
+                config.getProperty(OAuthConstants.GRANT_TYPE),
+                config.getProperty(OAuthConstants.CLIENT_ID),
+                config.getProperty(OAuthConstants.CLIENT_SECRET),
+                config.getProperty(OAuthConstants.USERNAME),
+                config.getProperty(OAuthConstants.PASSWORD)
+        );
+
         oauthDetails.setAccessToken((String) config
                 .get(OAuthConstants.ACCESS_TOKEN));
         oauthDetails.setRefreshToken((String) config
                 .get(OAuthConstants.REFRESH_TOKEN));
-        oauthDetails.setGrantType((String) config
-                .get(OAuthConstants.GRANT_TYPE));
-        oauthDetails.setClientId((String) config.get(OAuthConstants.CLIENT_ID));
-        oauthDetails.setClientSecret((String) config
-                .get(OAuthConstants.CLIENT_SECRET));
-        oauthDetails.setScope((String) config.get(OAuthConstants.SCOPE));
-        oauthDetails.setAuthenticationServerUrl((String) config
-                .get(OAuthConstants.AUTHENTICATION_SERVER_URL));
-        oauthDetails.setUsername((String) config.get(OAuthConstants.USERNAME));
-        oauthDetails.setPassword((String) config.get(OAuthConstants.PASSWORD));
-
         return oauthDetails;
     }
 
@@ -125,11 +124,9 @@ public class OAuthUtils {
         }
 
     }
-
     /**
-     * Gets token using clientId-secret
-     *
-     * @return
+     * @param oauthDetails
+     * @return token
      * @throws IOException
      */
     public static String getTokenClientSecret(OAuth2Details oauthDetails) throws IOException {
@@ -154,7 +151,7 @@ public class OAuthUtils {
 
         response = client.execute(post);
         int code = response.getStatusLine().getStatusCode();
-        if (code != 400) {
+        if (code != OAuthConstants.HTTP_OK) {
             throw new IOException("HTTP request using clientId, secret for token failed with code " + code);
         }
         Map<String, String> map = handleResponse(response);
@@ -182,7 +179,7 @@ public class OAuthUtils {
         post.releaseConnection();
         response = client.execute(post);
         int code = response.getStatusLine().getStatusCode();
-        if (code != 400) {
+        if (code !=  OAuthConstants.HTTP_OK) {
             throw new IOException("HTTP request using basic auth for token failed with code " + code);
         }
         Map<String, String> map = handleResponse(response);
