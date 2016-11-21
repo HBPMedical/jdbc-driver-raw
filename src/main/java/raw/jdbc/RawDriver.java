@@ -1,5 +1,6 @@
 package raw.jdbc;
 
+import oauth.OAuth2Details;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 
@@ -12,16 +13,25 @@ public class RawDriver implements Driver {
 
     @SuppressWarnings("Since15")
     public Connection connect(String url, Properties info) throws SQLException {
-        String oAuthUri = info.getProperty("oAuthUri");
-        String redirectUri = info.getProperty("redirectUri");
-        String userId = info.getProperty("userId");
+        String authUri = info.getProperty("authentication_server_url");
+        String clientSecret = info.getProperty("client_secret");
+        String clientId = info.getProperty("client_id");
+        String username = info.getProperty("username");
+        String password = info.getProperty("password");
 
+        OAuth2Details oAuth2Details = new OAuth2Details(authUri,
+                );
         try {
-            return new RawConnection(url, oAuthUri, redirectUri, userId);
+            return new RawConnection();
         } catch (Exception e) {
             e.printStackTrace();
             throw new SQLException("Could not connect", e);
         }
+    }
+
+    private String getToken(String url, Properties info) {
+
+
     }
 
     public boolean acceptsURL(String url) throws SQLException {

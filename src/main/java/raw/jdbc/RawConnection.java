@@ -17,24 +17,9 @@ import static org.apache.oltu.oauth2.client.request.OAuthClientRequest.authoriza
 
 public class RawConnection implements Connection {
 
-    private String accessToken = null;
-    private Long expiresIn = null;
-    private String executerUrl;
-
-    RawConnection(String url, String oAuthUri, String redirectUri, String user)
-            throws OAuthSystemException, OAuthProblemException {
-
-        /*OAuthClientRequest request = OAuthClientRequest
-                .authorizationLocation(oAuthUri)
-                .setResponseType()
-                .setRedirectURI(redirectUri)
-                .buildQueryMessage();
-
-        OAuthClient oAuthClient = new OAuthClient(new URLConnectionClient());
-        GitHubTokenResponse oAuthResponse = oAuthClient.accessToken(request, GitHubTokenResponse.class);
-        accessToken = oAuthResponse.getAccessToken();
-        expiresIn = oAuthResponse.getExpiresIn();
-        executerUrl = url;*/
+    oauth.OAuth2Details oauthInfo ;
+    RawConnection(oauth.OAuth2Details info) {
+        this.oauthInfo = info;
     }
 
     public Statement createStatement() throws SQLException {

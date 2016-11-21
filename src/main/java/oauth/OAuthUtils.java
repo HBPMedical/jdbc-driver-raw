@@ -3,6 +3,7 @@ package oauth;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.ParseException;
 import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -38,340 +40,373 @@ import org.xml.sax.SAXException;
 
 public class OAuthUtils {
 
-	public static OAuth2Details createOAuthDetails(Properties config) {
-		OAuth2Details oauthDetails = new OAuth2Details();
-		oauthDetails.setAccessToken((String) config
-				.get(OAuthConstants.ACCESS_TOKEN));
-		oauthDetails.setRefreshToken((String) config
-				.get(OAuthConstants.REFRESH_TOKEN));
-		oauthDetails.setGrantType((String) config
-				.get(OAuthConstants.GRANT_TYPE));
-		oauthDetails.setClientId((String) config.get(OAuthConstants.CLIENT_ID));
-		oauthDetails.setClientSecret((String) config
-				.get(OAuthConstants.CLIENT_SECRET));
-		oauthDetails.setScope((String) config.get(OAuthConstants.SCOPE));
-		oauthDetails.setAuthenticationServerUrl((String) config
-				.get(OAuthConstants.AUTHENTICATION_SERVER_URL));
-		oauthDetails.setUsername((String) config.get(OAuthConstants.USERNAME));
-		oauthDetails.setPassword((String) config.get(OAuthConstants.PASSWORD));
+    public static OAuth2Details createOAuthDetails(Properties config) {
+        OAuth2Details oauthDetails = new OAuth2Details();
+        oauthDetails.setAccessToken((String) config
+                .get(OAuthConstants.ACCESS_TOKEN));
+        oauthDetails.setRefreshToken((String) config
+                .get(OAuthConstants.REFRESH_TOKEN));
+        oauthDetails.setGrantType((String) config
+                .get(OAuthConstants.GRANT_TYPE));
+        oauthDetails.setClientId((String) config.get(OAuthConstants.CLIENT_ID));
+        oauthDetails.setClientSecret((String) config
+                .get(OAuthConstants.CLIENT_SECRET));
+        oauthDetails.setScope((String) config.get(OAuthConstants.SCOPE));
+        oauthDetails.setAuthenticationServerUrl((String) config
+                .get(OAuthConstants.AUTHENTICATION_SERVER_URL));
+        oauthDetails.setUsername((String) config.get(OAuthConstants.USERNAME));
+        oauthDetails.setPassword((String) config.get(OAuthConstants.PASSWORD));
 
-		return oauthDetails;
-	}
+        return oauthDetails;
+    }
 
-	public static Properties getClientConfigProps(String path) {
-		InputStream is = OAuthUtils.class.getClassLoader().getResourceAsStream(
-				path);
-		Properties config = new Properties();
-		try {
-			config.load(is);
-		} catch (IOException e) {
-			System.out.println("Could not load properties from " + path);
-			e.printStackTrace();
-			return null;
-		}
-		return config;
-	}
+    public static Properties getClientConfigProps(String path) {
+        InputStream is = OAuthUtils.class.getClassLoader().getResourceAsStream(path);
+        Properties config = new Properties();
+        try {
+            config.load(is);
+        } catch (IOException e) {
+            return null;
+        }
+        return config;
+    }
 
-	public static void getProtectedResource(Properties config) {
-		String resourceURL = config
-				.getProperty(OAuthConstants.RESOURCE_SERVER_URL);
-		OAuth2Details oauthDetails = createOAuthDetails(config);
-		HttpGet get = new HttpGet(resourceURL);
-		get.addHeader(OAuthConstants.AUTHORIZATION,
-				getAuthorizationHeaderForAccessToken(oauthDetails
-						.getAccessToken()));
-		DefaultHttpClient client = new DefaultHttpClient();
-		HttpResponse response = null;
-		int code = -1;
-		try {
-			response = client.execute(get);
-			code = response.getStatusLine().getStatusCode();
-			if (code >= 400) {
-				// Access token is invalid or expired.Regenerate the access
-				// token
-				System.out
-						.println("Access token is invalid or expired. Regenerating access token....");
-				String accessToken = getAccessToken(oauthDetails);
-				if (isValid(accessToken)) {
-					// update the access token
-					// System.out.println("New access token: " + accessToken);
-					oauthDetails.setAccessToken(accessToken);
-					get.removeHeaders(OAuthConstants.AUTHORIZATION);
-					get.addHeader(OAuthConstants.AUTHORIZATION,
-							getAuthorizationHeaderForAccessToken(oauthDetails
-									.getAccessToken()));
-					get.releaseConnection();
-					response = client.execute(get);
-					code = response.getStatusLine().getStatusCode();
-					if (code >= 400) {
-						throw new RuntimeException(
-								"Could not access protected resource. Server returned http code: "
-										+ code);
+    public static void getProtectedResource(Properties config) {
+        String resourceURL = config
+                .getProperty(OAuthConstants.RESOURCE_SERVER_URL);
+        OAuth2Details oauthDetails = createOAuthDetails(config);
+        HttpGet get = new HttpGet(resourceURL);
+        get.addHeader(OAuthConstants.AUTHORIZATION,
+                getAuthorizationHeaderForAccessToken(oauthDetails
+                        .getAccessToken()));
+        DefaultHttpClient client = new DefaultHttpClient();
+        HttpResponse response = null;
+        int code = -1;
+        try {
+            response = client.execute(get);
+            code = response.getStatusLine().getStatusCode();
+            if (code >= 400) {
+                // Access token is invalid or expired.Regenerate the access
+                // token
+                System.out
+                        .println("Access token is invalid or expired. Regenerating access token....");
+                String accessToken = getAccessToken(oauthDetails);
+                if (isValid(accessToken)) {
+                    // update the access token
+                    // System.out.println("New access token: " + accessToken);
+                    oauthDetails.setAccessToken(accessToken);
+                    get.removeHeaders(OAuthConstants.AUTHORIZATION);
+                    get.addHeader(OAuthConstants.AUTHORIZATION,
+                            getAuthorizationHeaderForAccessToken(oauthDetails
+                                    .getAccessToken()));
+                    get.releaseConnection();
+                    response = client.execute(get);
+                    code = response.getStatusLine().getStatusCode();
+                    if (code >= 400) {
+                        throw new RuntimeException(
+                                "Could not access protected resource. Server returned http code: "
+                                        + code);
+                    }
 
-					}
+                } else {
+                    throw new RuntimeException(
+                            "Could not regenerate access token");
+                }
+            }
+            handleResponse(response);
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } finally {
+            get.releaseConnection();
+        }
 
-				} else {
-					throw new RuntimeException(
-							"Could not regenerate access token");
-				}
+    }
 
-			}
+    /**
+     * Gets token using clientId-secret
+     *
+     * @return
+     * @throws IOException
+     */
+    public static String getTokenClientSecret(OAuth2Details oauthDetails) throws IOException {
 
-			handleResponse(response);
+        HttpPost post = new HttpPost(oauthDetails.getAuthenticationServerUrl());
 
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			get.releaseConnection();
-		}
+        List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
+        parametersBody.add(new BasicNameValuePair(OAuthConstants.GRANT_TYPE,
+                oauthDetails.getGrantType()));
+        parametersBody.add(new BasicNameValuePair(OAuthConstants.CLIENT_ID,
+                oauthDetails.getClientId()));
+        parametersBody.add(new BasicNameValuePair(
+                OAuthConstants.CLIENT_SECRET, oauthDetails.getClientSecret()));
+        parametersBody.add(new BasicNameValuePair(OAuthConstants.USERNAME,
+                oauthDetails.getUsername()));
+        parametersBody.add(new BasicNameValuePair(OAuthConstants.PASSWORD,
+                oauthDetails.getPassword()));
 
-	}
+        HttpClient client = new DefaultHttpClient();
+        HttpResponse response;
+        post.setEntity(new UrlEncodedFormEntity(parametersBody));
 
-	public static String getAccessToken(OAuth2Details oauthDetails) {
-		HttpPost post = new HttpPost(oauthDetails.getAuthenticationServerUrl());
-		String clientId = oauthDetails.getClientId();
-		String clientSecret = oauthDetails.getClientSecret();
-		String scope = oauthDetails.getScope();
+        response = client.execute(post);
+        int code = response.getStatusLine().getStatusCode();
+        if (code != 400) {
+            throw new IOException("HTTP request using clientId, secret for token failed with code " + code);
+        }
+        Map<String, String> map = handleResponse(response);
+        return map.get(OAuthConstants.ACCESS_TOKEN);
+    }
 
-		List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
-		parametersBody.add(new BasicNameValuePair(OAuthConstants.GRANT_TYPE,
-				oauthDetails.getGrantType()));
-		parametersBody.add(new BasicNameValuePair(OAuthConstants.USERNAME,
-				oauthDetails.getUsername()));
-		parametersBody.add(new BasicNameValuePair(OAuthConstants.PASSWORD,
-				oauthDetails.getPassword()));
+    /**
+     * Gets token using basic authentication, username-password
+     *
+     * @param authenticationUrl
+     * @param username
+     * @param password
+     * @return
+     * @throws IOException
+     */
+    public static String getTokenBasicAuth(String authenticationUrl,
+                                           String username,
+                                           String password) throws IOException {
 
-		if (isValid(clientId)) {
-			parametersBody.add(new BasicNameValuePair(OAuthConstants.CLIENT_ID,
-					clientId));
-		}
-		if (isValid(clientSecret)) {
-			parametersBody.add(new BasicNameValuePair(
-					OAuthConstants.CLIENT_SECRET, clientSecret));
-		}
-		if (isValid(scope)) {
-			parametersBody.add(new BasicNameValuePair(OAuthConstants.SCOPE,
-					scope));
-		}
+        HttpPost post = new HttpPost(authenticationUrl);
+        post.addHeader(OAuthConstants.AUTHORIZATION,
+                getBasicAuthorizationHeader(username, password));
+        DefaultHttpClient client = new DefaultHttpClient();
+        HttpResponse response;
+        post.releaseConnection();
+        response = client.execute(post);
+        int code = response.getStatusLine().getStatusCode();
+        if (code != 400) {
+            throw new IOException("HTTP request using basic auth for token failed with code " + code);
+        }
+        Map<String, String> map = handleResponse(response);
+        return map.get(OAuthConstants.ACCESS_TOKEN);
+    }
 
-		DefaultHttpClient client = new DefaultHttpClient();
-		HttpResponse response = null;
-		String accessToken = null;
-		try {
-			post.setEntity(new UrlEncodedFormEntity(parametersBody, HTTP.UTF_8));
+    public static String getAccessToken(OAuth2Details oauthDetails) {
+        HttpPost post = new HttpPost(oauthDetails.getAuthenticationServerUrl());
+        String clientId = oauthDetails.getClientId();
+        String clientSecret = oauthDetails.getClientSecret();
+        String scope = oauthDetails.getScope();
 
-			response = client.execute(post);
-			int code = response.getStatusLine().getStatusCode();
-			System.out.println("return code = " + code);
-			if (code >= 400) {
-				System.out
-						.println("Authorization server expects Basic authentication");
-				// Add Basic Authorization header
-				post.addHeader(
-						OAuthConstants.AUTHORIZATION,
-						getBasicAuthorizationHeader(oauthDetails.getUsername(),
-								oauthDetails.getPassword()));
-				System.out.println("Retry with login credentials");
-				post.releaseConnection();
-				response = client.execute(post);
-				code = response.getStatusLine().getStatusCode();
-				if (code >= 400) {
-					System.out.println("Retry with client credentials");
-					post.removeHeaders(OAuthConstants.AUTHORIZATION);
-					post.addHeader(
-							OAuthConstants.AUTHORIZATION,
-							getBasicAuthorizationHeader(
-									oauthDetails.getClientId(),
-									oauthDetails.getClientSecret()));
-					post.releaseConnection();
-					response = client.execute(post);
-					code = response.getStatusLine().getStatusCode();
-					if (code >= 400) {
-						throw new RuntimeException(
-								"Could not retrieve access token for user: "
-										+ oauthDetails.getUsername());
-					}
-				}
+        List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
+        parametersBody.add(new BasicNameValuePair(OAuthConstants.GRANT_TYPE,
+                oauthDetails.getGrantType()));
+        parametersBody.add(new BasicNameValuePair(OAuthConstants.USERNAME,
+                oauthDetails.getUsername()));
+        parametersBody.add(new BasicNameValuePair(OAuthConstants.PASSWORD,
+                oauthDetails.getPassword()));
 
-			}
-			Map<String, String> map = handleResponse(response);
-			accessToken = map.get(OAuthConstants.ACCESS_TOKEN);
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+        if (isValid(clientId)) {
+            parametersBody.add(new BasicNameValuePair(OAuthConstants.CLIENT_ID,
+                    clientId));
+        }
+        if (isValid(clientSecret)) {
+            parametersBody.add(new BasicNameValuePair(
+                    OAuthConstants.CLIENT_SECRET, clientSecret));
+        }
+        if (isValid(scope)) {
+            parametersBody.add(new BasicNameValuePair(OAuthConstants.SCOPE,
+                    scope));
+        }
 
-		return accessToken;
-	}
+        DefaultHttpClient client = new DefaultHttpClient();
+        HttpResponse response = null;
+        String accessToken = null;
+        try {
+            post.setEntity(new UrlEncodedFormEntity(parametersBody, HTTP.UTF_8));
 
-	public static Map handleResponse(HttpResponse response) {
-		String contentType = OAuthConstants.JSON_CONTENT;
-		if (response.getEntity().getContentType() != null) {
-			contentType = response.getEntity().getContentType().getValue();
-		}
-		if (contentType.contains(OAuthConstants.JSON_CONTENT)) {
-			return handleJsonResponse(response);
-		} else if (contentType.contains(OAuthConstants.URL_ENCODED_CONTENT)) {
-			return handleURLEncodedResponse(response);
-		} else if (contentType.contains(OAuthConstants.XML_CONTENT)) {
-			return handleXMLResponse(response);
-		} else {
-			// Unsupported Content type
-			throw new RuntimeException(
-					"Cannot handle "
-							+ contentType
-							+ " content type. Supported content types include JSON, XML and URLEncoded");
-		}
+            response = client.execute(post);
+            int code = response.getStatusLine().getStatusCode();
+            System.out.println("return code = " + code);
+            if (code >= 400) {
+                System.out
+                        .println("Authorization server expects Basic authentication");
+                // Add Basic Authorization header
+                post.addHeader(
+                        OAuthConstants.AUTHORIZATION,
+                        getBasicAuthorizationHeader(oauthDetails.getUsername(),
+                                oauthDetails.getPassword()));
+                System.out.println("Retry with login credentials");
+                post.releaseConnection();
+                response = client.execute(post);
+                code = response.getStatusLine().getStatusCode();
+                if (code >= 400) {
+                    System.out.println("Retry with client credentials");
+                    post.removeHeaders(OAuthConstants.AUTHORIZATION);
+                    post.addHeader(
+                            OAuthConstants.AUTHORIZATION,
+                            getBasicAuthorizationHeader(
+                                    oauthDetails.getClientId(),
+                                    oauthDetails.getClientSecret()));
+                    post.releaseConnection();
+                    response = client.execute(post);
+                    code = response.getStatusLine().getStatusCode();
+                    if (code >= 400) {
+                        throw new RuntimeException(
+                                "Could not retrieve access token for user: "
+                                        + oauthDetails.getUsername());
+                    }
+                }
+            }
+            Map<String, String> map = handleResponse(response);
+            accessToken = map.get(OAuthConstants.ACCESS_TOKEN);
+        } catch (ClientProtocolException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return accessToken;
+    }
 
-	}
+    public static Map handleResponse(HttpResponse response) {
+        String contentType = OAuthConstants.JSON_CONTENT;
+        if (response.getEntity().getContentType() != null) {
+            contentType = response.getEntity().getContentType().getValue();
+        }
+        if (contentType.contains(OAuthConstants.JSON_CONTENT)) {
+            return handleJsonResponse(response);
+        } else if (contentType.contains(OAuthConstants.URL_ENCODED_CONTENT)) {
+            return handleURLEncodedResponse(response);
+        } else if (contentType.contains(OAuthConstants.XML_CONTENT)) {
+            return handleXMLResponse(response);
+        } else {
+            // Unsupported Content type
+            throw new RuntimeException(
+                    "Cannot handle "
+                            + contentType
+                            + " content type. Supported content types include JSON, XML and URLEncoded");
+        }
 
-	public static Map handleJsonResponse(HttpResponse response) {
-		Map<String, String> oauthLoginResponse = null;
-		String contentType = response.getEntity().getContentType().getValue();
-		try {
-			oauthLoginResponse = (Map<String, String>) new JSONParser()
-					.parse(EntityUtils.toString(response.getEntity()));
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException();
-		} catch (org.json.simple.parser.ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException();
-		} catch (RuntimeException e) {
-			System.out.println("Could not parse JSON response");
-			throw e;
-		}
-		System.out.println();
-		System.out.println("********** Response Received **********");
-		for (Map.Entry<String, String> entry : oauthLoginResponse.entrySet()) {
-			System.out.println(String.format("  %s = %s", entry.getKey(),
-					entry.getValue()));
-		}
-		return oauthLoginResponse;
-	}
+    }
 
-	public static Map handleURLEncodedResponse(HttpResponse response) {
-		Map<String, Charset> map = Charset.availableCharsets();
-		Map<String, String> oauthResponse = new HashMap<String, String>();
-		Set<Map.Entry<String, Charset>> set = map.entrySet();
-		Charset charset = null;
-		HttpEntity entity = response.getEntity();
+    public static Map handleJsonResponse(HttpResponse response) {
+        Map<String, String> oauthLoginResponse = null;
+        try {
+            oauthLoginResponse = (Map<String, String>) new JSONParser()
+                    .parse(EntityUtils.toString(response.getEntity()));
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new RuntimeException();
+        } catch (org.json.simple.parser.ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new RuntimeException();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new RuntimeException();
+        } catch (RuntimeException e) {
+            System.out.println("Could not parse JSON response");
+            throw e;
+        }
+        return oauthLoginResponse;
+    }
 
-		System.out.println();
-		System.out.println("********** Response Received **********");
+    public static Map handleURLEncodedResponse(HttpResponse response) {
+        Map<String, Charset> map = Charset.availableCharsets();
+        Map<String, String> oauthResponse = new HashMap<String, String>();
+        Set<Map.Entry<String, Charset>> set = map.entrySet();
+        HttpEntity entity = response.getEntity();
 
-		for (Map.Entry<String, Charset> entry : set) {
-			System.out.println(String.format("  %s = %s", entry.getKey(),
-					entry.getValue()));
-			if (entry.getKey().equalsIgnoreCase(HTTP.UTF_8)) {
-				charset = entry.getValue();
-			}
-		}
+        try {
+            //TODO: make this work with other encodings
+            List<NameValuePair> list = URLEncodedUtils.parse(
+                    EntityUtils.toString(entity), Charset.forName(HTTP.UTF_8));
+            for (NameValuePair pair : list) {
+                System.out.println(String.format("  %s = %s", pair.getName(),
+                        pair.getValue()));
+                oauthResponse.put(pair.getName(), pair.getValue());
+            }
 
-		try {
-			List<NameValuePair> list = URLEncodedUtils.parse(
-					EntityUtils.toString(entity), Charset.forName(HTTP.UTF_8));
-			for (NameValuePair pair : list) {
-				System.out.println(String.format("  %s = %s", pair.getName(),
-						pair.getValue()));
-				oauthResponse.put(pair.getName(), pair.getValue());
-			}
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            throw new RuntimeException("Could not parse URLEncoded Response");
+        }
 
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new RuntimeException("Could not parse URLEncoded Response");
-		}
+        return oauthResponse;
+    }
 
-		return oauthResponse;
-	}
+    public static Map handleXMLResponse(HttpResponse response) {
+        Map<String, String> oauthResponse = new HashMap<String, String>();
+        try {
+            String xmlString = EntityUtils.toString(response.getEntity());
+            DocumentBuilderFactory factory = DocumentBuilderFactory
+                    .newInstance();
+            DocumentBuilder db = factory.newDocumentBuilder();
+            InputSource inStream = new InputSource();
+            inStream.setCharacterStream(new StringReader(xmlString));
+            Document doc = db.parse(inStream);
+            parseXMLDoc(null, doc, oauthResponse);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(
+                    "Exception occurred while parsing XML response");
+        }
+        return oauthResponse;
+    }
 
-	public static Map handleXMLResponse(HttpResponse response) {
-		Map<String, String> oauthResponse = new HashMap<String, String>();
-		try {
+    public static void parseXMLDoc(Element element, Document doc,
+                                   Map<String, String> oauthResponse) {
+        NodeList child;
+        if (element == null) {
+            child = doc.getChildNodes();
 
-			String xmlString = EntityUtils.toString(response.getEntity());
-			DocumentBuilderFactory factory = DocumentBuilderFactory
-					.newInstance();
-			DocumentBuilder db = factory.newDocumentBuilder();
-			InputSource inStream = new InputSource();
-			inStream.setCharacterStream(new StringReader(xmlString));
-			Document doc = db.parse(inStream);
+        } else {
+            child = element.getChildNodes();
+        }
+        for (int j = 0; j < child.getLength(); j++) {
+            if (child.item(j).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                org.w3c.dom.Element childElement = (org.w3c.dom.Element) child
+                        .item(j);
+                if (childElement.hasChildNodes()) {
+                    System.out.println(childElement.getTagName() + " : "
+                            + childElement.getTextContent());
+                    oauthResponse.put(childElement.getTagName(),
+                            childElement.getTextContent());
+                    parseXMLDoc(childElement, null, oauthResponse);
+                }
 
-			System.out.println("********** Response Receieved **********");
-			parseXMLDoc(null, doc, oauthResponse);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException(
-					"Exception occurred while parsing XML response");
-		}
-		return oauthResponse;
-	}
+            }
+        }
+    }
 
-	public static void parseXMLDoc(Element element, Document doc,
-			Map<String, String> oauthResponse) {
-		NodeList child = null;
-		if (element == null) {
-			child = doc.getChildNodes();
+    public static String getAuthorizationHeaderForAccessToken(String accessToken) {
+        return OAuthConstants.BEARER + " " + accessToken;
+    }
 
-		} else {
-			child = element.getChildNodes();
-		}
-		for (int j = 0; j < child.getLength(); j++) {
-			if (child.item(j).getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-				org.w3c.dom.Element childElement = (org.w3c.dom.Element) child
-						.item(j);
-				if (childElement.hasChildNodes()) {
-					System.out.println(childElement.getTagName() + " : "
-							+ childElement.getTextContent());
-					oauthResponse.put(childElement.getTagName(),
-							childElement.getTextContent());
-					parseXMLDoc(childElement, null, oauthResponse);
-				}
+    public static String getBasicAuthorizationHeader(String username,
+                                                     String password) {
+        return OAuthConstants.BASIC + " "
+                + encodeCredentials(username, password);
+    }
 
-			}
-		}
-	}
+    public static String encodeCredentials(String username, String password) {
+        String cred = username + ":" + password;
+        String encodedValue = null;
+        byte[] encodedBytes = Base64.encodeBase64(cred.getBytes());
+        encodedValue = new String(encodedBytes);
+        System.out.println("encodedBytes " + new String(encodedBytes));
 
-	public static String getAuthorizationHeaderForAccessToken(String accessToken) {
-		return OAuthConstants.BEARER + " " + accessToken;
-	}
+        byte[] decodedBytes = Base64.decodeBase64(encodedBytes);
+        System.out.println("decodedBytes " + new String(decodedBytes));
 
-	public static String getBasicAuthorizationHeader(String username,
-			String password) {
-		return OAuthConstants.BASIC + " "
-				+ encodeCredentials(username, password);
-	}
+        return encodedValue;
 
-	public static String encodeCredentials(String username, String password) {
-		String cred = username + ":" + password;
-		String encodedValue = null;
-		byte[] encodedBytes = Base64.encodeBase64(cred.getBytes());
-		encodedValue = new String(encodedBytes);
-		System.out.println("encodedBytes " + new String(encodedBytes));
+    }
 
-		byte[] decodedBytes = Base64.decodeBase64(encodedBytes);
-		System.out.println("decodedBytes " + new String(decodedBytes));
-
-		return encodedValue;
-
-	}
-
-	public static boolean isValid(String str) {
-		return (str != null && str.trim().length() > 0);
-	}
+    public static boolean isValid(String str) {
+        return (str != null && str.trim().length() > 0);
+    }
 
 }
