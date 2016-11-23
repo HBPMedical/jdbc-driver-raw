@@ -1,16 +1,16 @@
-package oauth;
+package raw.jdbc.oauth2;
 
 public class OAuthConstants {
 	
 	public static final String ACCESS_TOKEN = "access_token";
+	public static final String TOKEN_TYPE = "token_type";
+	public static final String EXPIRES_IN = "expires_in";
+	public static final String REFRESH_TOKEN = "refresh_token";
 	public static final String CLIENT_ID = "client_id";
 	public static final String CLIENT_SECRET = "client_secret";
-	public static final String REFRESH_TOKEN = "refresh_token";
 	public static final String USERNAME = "username";
 	public static final String PASSWORD = "password";
-	public static final String AUTHENTICATION_SERVER_URL = "authentication_server_url";
-	public static final String CONFIG_FILE_PATH = "Oauth2Client.config";
-	public static final String RESOURCE_SERVER_URL = "resource_server_url";
+
 	public static final String GRANT_TYPE = "grant_type";
 	public static final String SCOPE = "scope";
 	public static final String AUTHORIZATION = "Authorization";
