@@ -11,8 +11,8 @@ import java.net.URISyntaxException;
 import java.sql.*;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 public class RawDriver implements Driver {
 
@@ -20,12 +20,14 @@ public class RawDriver implements Driver {
     static final String JDBC_CLIENT_ID = "raw-jdbc";
     static final String GRANT_TYPE = "password";
     static final String EXEC_PROP_NAME = "executor";
-    static final String AUTH_PROP_NAME = "authentication_url";
+    static final String AUTH_PROP_NAME = "auth_url";
+
+    static Logger logger = Logger.getLogger(RawDriver.class.getName());
 
     public Connection connect(String url, Properties info) throws SQLException {
         try {
             Properties props = parseProperties(url, info);
-            PasswordCredentials credentials =PasswordCredentials.fromProperties(props);
+            PasswordCredentials credentials = PasswordCredentials.fromProperties(props);
             String authUrl = props.getProperty(AUTH_PROP_NAME);
             String executer = props.getProperty(EXEC_PROP_NAME);
             TokenResponse token = OAuthUtils.getPasswdGrantToken(authUrl, credentials);
@@ -37,7 +39,7 @@ public class RawDriver implements Driver {
     }
 
     public static Properties parseUrl(String url) throws SQLException {
-        if (!url.startsWith("jdbc:raw:")){
+        if (!url.startsWith("jdbc:raw:")) {
             throw new SQLException("Invalid url to start with 'jdbc:raw:'");
         }
         try {
@@ -48,12 +50,13 @@ public class RawDriver implements Driver {
                 properties.put(nvp.getName(), nvp.getValue());
             }
 
-            String executer = String.format("%s:%d", uri.getHost(), uri.getPort());
-            properties.setProperty(EXEC_PROP_NAME, executer);
-            uri.getUserInfo();
-
+            String executor = String.format("%s:%d", uri.getHost(), uri.getPort());
+            logger.finest("executor: " + executor);
+            properties.setProperty(EXEC_PROP_NAME, executor);
+            String userinfo = uri.getUserInfo();
+            logger.finest("user info: " + userinfo);
             return properties;
-        } catch (URISyntaxException e){
+        } catch (URISyntaxException e) {
             throw new SQLException("Invalid url", e);
         }
     }
@@ -92,6 +95,9 @@ public class RawDriver implements Driver {
         finalInfo.setProperty(EXEC_PROP_NAME, urlParams.getProperty(EXEC_PROP_NAME));
         finalInfo.setProperty(OAuthUtils.CLIENT_ID, JDBC_CLIENT_ID);
         finalInfo.setProperty(OAuthUtils.GRANT_TYPE, GRANT_TYPE);
+        if (!finalInfo.contains(AUTH_PROP_NAME)) {
+            throw new SQLException("Could not find authorization url property");
+        }
         return finalInfo;
     }
 
