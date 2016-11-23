@@ -88,4 +88,13 @@ public class TestDriver extends TestCase {
         Properties info  = new Properties();
         Connection conn = driver.connect(url, info);
     }
+
+    public void testConnectWithProperties() throws SQLException {
+
+        String url ="jdbc:raw:http://localhost:54321";
+        RawDriver driver = new RawDriver();
+        // Will get the user credentials from the properties file
+        Connection conn = driver.connect(url, conf);
+    }
+
 }
