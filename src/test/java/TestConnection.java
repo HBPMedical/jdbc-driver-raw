@@ -4,9 +4,21 @@ import raw.jdbc.oauth2.OAuthUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class TestConnection {
+
+    Properties credentials;
+
+    TestConnection() throws IOException {
+        String path = "credentials.conf";
+        InputStream is = OAuthUtils.class.getClassLoader().getResourceAsStream( path);
+        credentials = new Properties();
+        credentials.load(is);
+
+    }
+
     @Test
     public void testGetToken() throws IOException {
         String authServer ="http://localhost:9000/oauth2/access_token";
@@ -14,9 +26,9 @@ public class TestConnection {
         Properties info = new Properties();
         info.setProperty("client_id", "raw-jdbc");
         info.setProperty("grant_type", "password");
-        info.setProperty("username", "cesar.matos@gmail.com");
-        info.setProperty("password", "Mordor@1975");
-        PasswdCredentials credentials = OAuthUtils.createCredentials(info);
+
+        info.setProperty("username", credentials.getProperty("username"));
+        info.setProperty("password", credentials.getProperty("password"));
 
         TokenResponse token = OAuthUtils.getPasswdGrantToken(authServer, credentials);
         System.out.println("token type: " + token.tokenType);
