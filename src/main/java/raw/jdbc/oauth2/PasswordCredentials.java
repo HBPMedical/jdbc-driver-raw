@@ -22,7 +22,7 @@ public class PasswordCredentials {
     }
 
     public String getGrantType() {
-        return OAuthConstants.PASSWORD;
+        return OAuthUtils.PASSWORD;
     }
 
     public String getClientId() {
@@ -43,10 +43,10 @@ public class PasswordCredentials {
 
     public static PasswordCredentials fromProperties(Properties config) {
         PasswordCredentials oauthDetails = new PasswordCredentials(
-                config.getProperty(OAuthConstants.CLIENT_ID),
-                config.getProperty(OAuthConstants.CLIENT_SECRET),
-                config.getProperty(OAuthConstants.USERNAME),
-                config.getProperty(OAuthConstants.PASSWORD)
+                config.getProperty(OAuthUtils.CLIENT_ID),
+                config.getProperty(OAuthUtils.CLIENT_SECRET),
+                config.getProperty(OAuthUtils.USERNAME),
+                config.getProperty(OAuthUtils.PASSWORD)
         );
 
         return oauthDetails;

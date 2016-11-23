@@ -12,7 +12,7 @@ public class TestConnection {
     Properties conf;
 
     TestConnection() throws IOException {
-        String path = "conf.conf";
+        String path = "test.conf";
         InputStream is = OAuthUtils.class.getClassLoader().getResourceAsStream( path);
         conf = new Properties();
         conf.load(is);

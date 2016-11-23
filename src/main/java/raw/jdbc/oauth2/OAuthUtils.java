@@ -31,8 +31,24 @@ import org.xml.sax.InputSource;
 
 public class OAuthUtils {
 
+    public static final String ACCESS_TOKEN = "access_token";
+    public static final String TOKEN_TYPE = "token_type";
+    public static final String EXPIRES_IN = "expires_in";
+    public static final String REFRESH_TOKEN = "refresh_token";
+    public static final String CLIENT_ID = "client_id";
+    public static final String CLIENT_SECRET = "client_secret";
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
+    public static final String GRANT_TYPE = "grant_type";
+    public static final String JSON_CONTENT = "application/json";
+    public static final String XML_CONTENT = "application/xml";
+    public static final String URL_ENCODED_CONTENT = "application/x-www-form-urlencoded";
 
-    /**
+    public static final int HTTP_OK = 200;
+    public static final int HTTP_FORBIDDEN = 403;
+    public static final int HTTP_UNAUTHORIZED = 401;
+
+    /**Gets a token using password authentication to an oauth2 server
      * @param credentials
      * @return token
      * @throws IOException
@@ -42,16 +58,11 @@ public class OAuthUtils {
         HttpPost post = new HttpPost(authUrl);
 
         List<BasicNameValuePair> parametersBody = new ArrayList<BasicNameValuePair>();
-        parametersBody.add(new BasicNameValuePair(OAuthConstants.GRANT_TYPE,
-                credentials.getGrantType()));
-        parametersBody.add(new BasicNameValuePair(OAuthConstants.CLIENT_ID,
-                credentials.getClientId()));
-        parametersBody.add(new BasicNameValuePair(
-                OAuthConstants.CLIENT_SECRET, credentials.getClientSecret()));
-        parametersBody.add(new BasicNameValuePair(OAuthConstants.USERNAME,
-                credentials.getUsername()));
-        parametersBody.add(new BasicNameValuePair(OAuthConstants.PASSWORD,
-                credentials.getPassword()));
+        parametersBody.add(new BasicNameValuePair(GRANT_TYPE, credentials.getGrantType()));
+        parametersBody.add(new BasicNameValuePair(CLIENT_ID, credentials.getClientId()));
+        parametersBody.add(new BasicNameValuePair(CLIENT_SECRET, credentials.getClientSecret()));
+        parametersBody.add(new BasicNameValuePair(USERNAME, credentials.getUsername()));
+        parametersBody.add(new BasicNameValuePair(PASSWORD, credentials.getPassword()));
 
 
         HttpClient client = new DefaultHttpClient();
@@ -60,29 +71,29 @@ public class OAuthUtils {
 
         response = client.execute(post);
         int code = response.getStatusLine().getStatusCode();
-        if (code != OAuthConstants.HTTP_OK) {
+        if (code != HTTP_OK) {
             throw new IOException("HTTP request using clientId, secret for token failed with code " + code);
         }
         Map<String, Object> map = handleResponse(response);
 
         TokenResponse oauthToken = new TokenResponse();
-        oauthToken.acessToken = (String) map.get(OAuthConstants.ACCESS_TOKEN);
-        oauthToken.expiresIn = (java.lang.Long) map.get(OAuthConstants.EXPIRES_IN);
-        oauthToken.refreshToken = (String) map.get(OAuthConstants.REFRESH_TOKEN);
-        oauthToken.tokenType = (String) map.get(OAuthConstants.TOKEN_TYPE);
+        oauthToken.acessToken = (String) map.get(ACCESS_TOKEN);
+        oauthToken.expiresIn = (java.lang.Long) map.get(EXPIRES_IN);
+        oauthToken.refreshToken = (String) map.get(REFRESH_TOKEN);
+        oauthToken.tokenType = (String) map.get(TOKEN_TYPE);
         return  oauthToken;
     }
 
     static Map handleResponse(HttpResponse response) {
-        String contentType = OAuthConstants.JSON_CONTENT;
+        String contentType = JSON_CONTENT;
         if (response.getEntity().getContentType() != null) {
             contentType = response.getEntity().getContentType().getValue();
         }
-        if (contentType.contains(OAuthConstants.JSON_CONTENT)) {
+        if (contentType.contains(JSON_CONTENT)) {
             return handleJsonResponse(response);
-        } else if (contentType.contains(OAuthConstants.URL_ENCODED_CONTENT)) {
+        } else if (contentType.contains(URL_ENCODED_CONTENT)) {
             return handleURLEncodedResponse(response);
-        } else if (contentType.contains(OAuthConstants.XML_CONTENT)) {
+        } else if (contentType.contains(XML_CONTENT)) {
             return handleXMLResponse(response);
         } else {
             // Unsupported Content type
@@ -91,10 +102,9 @@ public class OAuthUtils {
                             + contentType
                             + " content type. Supported content types include JSON, XML and URLEncoded");
         }
-
     }
 
-    static Map handleJsonResponse(HttpResponse response) {
+    private static Map handleJsonResponse(HttpResponse response) {
         Map<String, Object> oauthLoginResponse;
         try {
             String json = EntityUtils.toString(response.getEntity());
@@ -107,7 +117,7 @@ public class OAuthUtils {
         return oauthLoginResponse;
     }
 
-    static Map handleURLEncodedResponse(HttpResponse response) {
+    private static Map handleURLEncodedResponse(HttpResponse response) {
         Map<String, String> oauthResponse = new HashMap<String, String>();
         HttpEntity entity = response.getEntity();
 
@@ -125,7 +135,7 @@ public class OAuthUtils {
         return oauthResponse;
     }
 
-    static Map handleXMLResponse(HttpResponse response) {
+    private static Map handleXMLResponse(HttpResponse response) {
         Map<String, Object> oauthResponse = new HashMap<String, Object>();
         try {
             String xmlString = EntityUtils.toString(response.getEntity());
@@ -142,7 +152,7 @@ public class OAuthUtils {
         return oauthResponse;
     }
 
-    static void parseXMLDoc(Element element, Document doc,
+    private static void parseXMLDoc(Element element, Document doc,
                                    Map<String, Object> oauthResponse) {
         NodeList child;
         if (element == null) {

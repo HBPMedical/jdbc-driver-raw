@@ -2,7 +2,6 @@ package raw.jdbc;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import raw.jdbc.oauth2.OAuthConstants;
 import raw.jdbc.oauth2.TokenResponse;
 import raw.jdbc.oauth2.OAuthUtils;
 import raw.jdbc.oauth2.PasswordCredentials;
@@ -19,16 +18,16 @@ public class RawDriver implements Driver {
 
     static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
     static final String JDBC_CLIENT_ID = "raw-jdbc";
-    static final String EXE_PROP_NAME = "executor";
-    static final String AUTH_PROP_NAME = "auth_server";
+    static final String GRANT_TYPE = "password";
+    static final String EXEC_PROP_NAME = "executor";
+    static final String AUTH_PROP_NAME = "authentication_url";
 
-    @SuppressWarnings("Since15")
     public Connection connect(String url, Properties info) throws SQLException {
         try {
             Properties props = parseProperties(url, info);
-            PasswordCredentials credentials = OAuthUtils.createCredentials(props);
+            PasswordCredentials credentials =PasswordCredentials.fromProperties(props);
             String authUrl = props.getProperty(AUTH_PROP_NAME);
-            String executer = props.getProperty(EXE_PROP_NAME);
+            String executer = props.getProperty(EXEC_PROP_NAME);
             TokenResponse token = OAuthUtils.getPasswdGrantToken(authUrl, credentials);
             return new RawConnection(executer, authUrl, token);
 
@@ -37,22 +36,26 @@ public class RawDriver implements Driver {
         }
     }
 
-    static Properties parseUrl(String url) throws URISyntaxException {
+    public static Properties parseUrl(String url) throws SQLException {
         if (!url.startsWith("jdbc:raw:")){
-            throw new URISyntaxException(url, " Invalid jdbc url for, expected url to start with 'jdbc:raw:'");
+            throw new SQLException("Invalid url to start with 'jdbc:raw:'");
         }
-        Properties properties = new Properties();
-        URI uri = new URI(url);
-        List<NameValuePair> paramList = URLEncodedUtils.parse(uri, "UTF-8");
-        for (NameValuePair nvp : paramList) {
-            properties.put(nvp.getName(), nvp.getValue());
+        try {
+            Properties properties = new Properties();
+            URI uri = new URI(url);
+            List<NameValuePair> paramList = URLEncodedUtils.parse(uri, "UTF-8");
+            for (NameValuePair nvp : paramList) {
+                properties.put(nvp.getName(), nvp.getValue());
+            }
+
+            String executer = String.format("%s:%d", uri.getHost(), uri.getPort());
+            properties.setProperty(EXEC_PROP_NAME, executer);
+            uri.getUserInfo();
+
+            return properties;
+        } catch (URISyntaxException e){
+            throw new SQLException("Invalid url", e);
         }
-
-        String executer = String.format("%s:%d", uri.getHost(), uri.getPort());
-        properties.setProperty(EXE_PROP_NAME, executer);
-        uri.getUserInfo();
-
-        return properties;
     }
 
     /**
@@ -64,7 +67,7 @@ public class RawDriver implements Driver {
      * @return New properties with default values
      * @throws URISyntaxException
      */
-    private static Properties parseProperties(String url, Properties info) throws URISyntaxException {
+    private static Properties parseProperties(String url, Properties info) throws SQLException {
         //Parses url parameters into a Map
         Properties urlParams = parseUrl(url);
 
@@ -73,10 +76,9 @@ public class RawDriver implements Driver {
 
         // copies all relevant properties giving priority to the ones defined in the url
         String[] properties = {
-                EXE_PROP_NAME,
                 AUTH_PROP_NAME,
-                OAuthConstants.USERNAME,
-                OAuthConstants.PASSWORD
+                OAuthUtils.USERNAME,
+                OAuthUtils.PASSWORD
         };
 
         for (String prop : properties) {
@@ -86,15 +88,21 @@ public class RawDriver implements Driver {
                 finalInfo.setProperty(prop, info.getProperty(prop));
             }
         }
-        finalInfo.setProperty(EXE_PROP_NAME, urlParams.getProperty(EXE_PROP_NAME));
-        finalInfo.setProperty(OAuthConstants.CLIENT_ID, JDBC_CLIENT_ID);
-        finalInfo.setProperty(OAuthConstants.GRANT_TYPE, OAuthConstants.PASSWORD);
+        // sets the executor property from the url parameters
+        finalInfo.setProperty(EXEC_PROP_NAME, urlParams.getProperty(EXEC_PROP_NAME));
+        finalInfo.setProperty(OAuthUtils.CLIENT_ID, JDBC_CLIENT_ID);
+        finalInfo.setProperty(OAuthUtils.GRANT_TYPE, GRANT_TYPE);
         return finalInfo;
     }
 
-    public boolean acceptsURL(String url) throws SQLException {
+    public boolean acceptsURL(String url) {
 
-        throw new UnsupportedOperationException("not implemented");
+        try {
+            parseUrl(url);
+        } catch (SQLException e) {
+            return false;
+        }
+        return true;
     }
 
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
@@ -113,7 +121,6 @@ public class RawDriver implements Driver {
         return false;
     }
 
-    @SuppressWarnings("Since15")
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return null;
     }
