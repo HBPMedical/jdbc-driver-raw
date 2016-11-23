@@ -1,4 +1,4 @@
-import raw.jdbc.oauth2.PasswdCredentials;
+import raw.jdbc.oauth2.PasswordCredentials;
 import raw.jdbc.oauth2.TokenResponse;
 import raw.jdbc.oauth2.OAuthUtils;
 import org.junit.Test;
@@ -9,13 +9,13 @@ import java.util.Properties;
 
 public class TestConnection {
 
-    Properties credentials;
+    Properties conf;
 
     TestConnection() throws IOException {
-        String path = "credentials.conf";
+        String path = "conf.conf";
         InputStream is = OAuthUtils.class.getClassLoader().getResourceAsStream( path);
-        credentials = new Properties();
-        credentials.load(is);
+        conf = new Properties();
+        conf.load(is);
 
     }
 
@@ -27,9 +27,10 @@ public class TestConnection {
         info.setProperty("client_id", "raw-jdbc");
         info.setProperty("grant_type", "password");
 
-        info.setProperty("username", credentials.getProperty("username"));
-        info.setProperty("password", credentials.getProperty("password"));
+        info.setProperty("username", conf.getProperty("username"));
+        info.setProperty("password", conf.getProperty("password"));
 
+        PasswordCredentials credentials = PasswordCredentials.fromProperties(info);
         TokenResponse token = OAuthUtils.getPasswdGrantToken(authServer, credentials);
         System.out.println("token type: " + token.tokenType);
         System.out.println("token: " + token.acessToken);

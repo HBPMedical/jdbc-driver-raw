@@ -7,19 +7,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -34,23 +30,14 @@ import org.xml.sax.InputSource;
 
 
 public class OAuthUtils {
-    public static PasswdCredentials createCredentials(Properties config) {
-        PasswdCredentials oauthDetails = new PasswdCredentials(
-                config.getProperty(OAuthConstants.CLIENT_ID),
-                config.getProperty(OAuthConstants.CLIENT_SECRET),
-                config.getProperty(OAuthConstants.USERNAME),
-                config.getProperty(OAuthConstants.PASSWORD)
-        );
 
-        return oauthDetails;
-    }
 
     /**
      * @param credentials
      * @return token
      * @throws IOException
      */
-    public static TokenResponse getPasswdGrantToken(String authUrl, PasswdCredentials credentials) throws IOException {
+    public static TokenResponse getPasswdGrantToken(String authUrl, PasswordCredentials credentials) throws IOException {
 
         HttpPost post = new HttpPost(authUrl);
 

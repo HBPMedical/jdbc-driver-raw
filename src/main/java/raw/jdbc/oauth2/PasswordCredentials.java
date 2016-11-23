@@ -1,15 +1,15 @@
 package raw.jdbc.oauth2;
 
-import raw.jdbc.oauth2.OAuthConstants;
+import java.util.Properties;
 
-public class PasswdCredentials {
+public class PasswordCredentials {
 
     private String clientId;
     private String clientSecret;
     private String username;
     private String password;
 
-    public PasswdCredentials(
+    public PasswordCredentials(
             String clientId,
             String clientSecret,
             String username,
@@ -39,5 +39,16 @@ public class PasswdCredentials {
 
     public String getPassword() {
         return password;
+    }
+
+    public static PasswordCredentials fromProperties(Properties config) {
+        PasswordCredentials oauthDetails = new PasswordCredentials(
+                config.getProperty(OAuthConstants.CLIENT_ID),
+                config.getProperty(OAuthConstants.CLIENT_SECRET),
+                config.getProperty(OAuthConstants.USERNAME),
+                config.getProperty(OAuthConstants.PASSWORD)
+        );
+
+        return oauthDetails;
     }
 }

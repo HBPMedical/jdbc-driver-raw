@@ -5,7 +5,7 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import raw.jdbc.oauth2.OAuthConstants;
 import raw.jdbc.oauth2.TokenResponse;
 import raw.jdbc.oauth2.OAuthUtils;
-import raw.jdbc.oauth2.PasswdCredentials;
+import raw.jdbc.oauth2.PasswordCredentials;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,7 +26,7 @@ public class RawDriver implements Driver {
     public Connection connect(String url, Properties info) throws SQLException {
         try {
             Properties props = parseProperties(url, info);
-            PasswdCredentials credentials = OAuthUtils.createCredentials(props);
+            PasswordCredentials credentials = OAuthUtils.createCredentials(props);
             String authUrl = props.getProperty(AUTH_PROP_NAME);
             String executer = props.getProperty(EXE_PROP_NAME);
             TokenResponse token = OAuthUtils.getPasswdGrantToken(authUrl, credentials);
