@@ -108,7 +108,6 @@ public class OAuthUtils {
         Map<String, Object> oauthLoginResponse;
         try {
             String json = EntityUtils.toString(response.getEntity());
-            System.out.println("token response: " + json);
             oauthLoginResponse = (Map<String, Object>) new JSONParser().parse(json);
             //TODO: Throw a more specific exception
         } catch (Exception e) {

@@ -34,15 +34,13 @@ public class TestDriver extends TestCase {
 
     public void testGetToken() throws IOException {
         String authServer = "http://localhost:9000/oauth2/access_token";
+        PasswordCredentials credentials = new PasswordCredentials(
+                "raw-jdbc",
+                null,
+                conf.getProperty("username"),
+                conf.getProperty("password")
+        );
 
-        Properties info = new Properties();
-        info.setProperty("client_id", "raw-jdbc");
-        info.setProperty("grant_type", "password");
-
-        info.setProperty("username", conf.getProperty("username"));
-        info.setProperty("password", conf.getProperty("password"));
-
-        PasswordCredentials credentials = PasswordCredentials.fromProperties(info);
         TokenResponse token = OAuthUtils.getPasswdGrantToken(authServer, credentials);
         logger.fine("token type: " + token.tokenType);
         logger.fine("token: " + token.acessToken);
@@ -86,7 +84,7 @@ public class TestDriver extends TestCase {
                 URLEncoder.encode(authUrl));
         RawDriver driver = new RawDriver();
         Properties info  = new Properties();
-        Connection conn = driver.connect(url, info);
+        driver.connect(url, info);
     }
 
     public void testConnectWithProperties() throws SQLException {
@@ -94,7 +92,7 @@ public class TestDriver extends TestCase {
         String url ="jdbc:raw:http://localhost:54321";
         RawDriver driver = new RawDriver();
         // Will get the user credentials from the properties file
-        Connection conn = driver.connect(url, conf);
+        driver.connect(url, conf);
     }
 
 }

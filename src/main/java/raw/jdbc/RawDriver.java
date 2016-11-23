@@ -34,7 +34,7 @@ public class RawDriver implements Driver {
             TokenResponse token = OAuthUtils.getPasswdGrantToken(authUrl, credentials);
             return new RawConnection(executer, authUrl, token);
         } catch (IOException e) {
-            throw new SQLException("Unable to get authorization for jdbc connection", e);
+            throw new SQLException("Unable to get bearer token for jdbc connection", e);
         }
     }
 
@@ -44,11 +44,8 @@ public class RawDriver implements Driver {
         }
         try {
             Properties properties = new Properties();
-
-            logger.fine("url: " + url);
-            // removes the jdbc:
+            // removes the jdbc:raw:
             String cleaned = url.substring(9);
-            logger.fine("cleaned: " + cleaned);
             URL uri = new URL(cleaned);
             List<NameValuePair> paramList = URLEncodedUtils.parse(new URI(cleaned), "UTF-8");
 
