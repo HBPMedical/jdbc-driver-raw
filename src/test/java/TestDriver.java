@@ -23,13 +23,13 @@ public class TestDriver extends RawTest {
 
         TokenResponse token = RawRestClient.getPasswdGrantToken(authServer, credentials);
         logger.fine("token type: " + token.tokenType);
-        logger.fine("token: " + token.acessToken);
+        logger.fine("token: " + token.accessToken);
         logger.fine("refresh token: " + token.refreshToken);
         logger.fine("expires in: " + token.expiresIn);
 
         assert (token.tokenType != null);
         assert (token.tokenType.equals("Bearer"));
-        assert (token.acessToken != null);
+        assert (token.accessToken != null);
         assert (token.refreshToken != null);
         assert (token.expiresIn != 0);
     }

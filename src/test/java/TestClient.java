@@ -9,6 +9,7 @@ import java.util.Map;
 public class TestClient extends RawTest {
 
     RawRestClient client;
+
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -22,7 +23,7 @@ public class TestClient extends RawTest {
         );
 
         TokenResponse token = RawRestClient.getPasswdGrantToken(authServer, credentials);
-        client = new RawRestClient( conf.getProperty("executor"), token);
+        client = new RawRestClient(conf.getProperty("executor"), token);
     }
 
     public void testVersion() throws IOException, ParseException {
@@ -32,7 +33,7 @@ public class TestClient extends RawTest {
 
     public void testSchemas() throws IOException, ParseException {
         String[] schemas = client.getSchemas();
-        for(String s: schemas) {
+        for (String s : schemas) {
             System.out.println("got schema: " + s);
         }
     }

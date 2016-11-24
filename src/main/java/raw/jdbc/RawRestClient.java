@@ -64,7 +64,7 @@ public class RawRestClient {
         Map map = getMapFromJsonResponse(response);
 
         TokenResponse oauthToken = new TokenResponse();
-        oauthToken.acessToken = (String) map.get("access_token");
+        oauthToken.accessToken = (String) map.get("access_token");
         oauthToken.expiresIn = (java.lang.Long) map.get("expires_in");
         oauthToken.refreshToken = (String) map.get("refresh_token");
         oauthToken.tokenType = (String) map.get("token_type");
@@ -115,8 +115,8 @@ public class RawRestClient {
         json.put("query", query);
         json.put("resultsPerPage", resultsPerPage);
         HttpResponse response = doJsonPost("/query-start", json);
-        int code =response.getStatusLine().getStatusCode();
-        if(code != 200) {
+        int code = response.getStatusLine().getStatusCode();
+        if (code != 200) {
             throw new RuntimeException("Error starting query");
         }
         Map data = getMapFromJsonResponse(response);
@@ -125,12 +125,12 @@ public class RawRestClient {
 
     private HttpResponse doJsonPost(String path, JSONObject data) throws IOException {
         HttpPost post = new HttpPost(executerUrl + path);
-        post.setHeader("Authorization", "Bearer " + credentials.acessToken);
+        post.setHeader("Authorization", "Bearer " + credentials.accessToken);
         StringEntity entity = new StringEntity(data.toString(), "UTF-8");
         entity.setContentType("application/json");
         post.setEntity(entity);
         HttpResponse response = client.execute(post);
-        int code =response.getStatusLine().getStatusCode();
+        int code = response.getStatusLine().getStatusCode();
         logger.fine("Finished get to path: '" + path + "' with code: " + code);
         return response;
     }
@@ -139,9 +139,9 @@ public class RawRestClient {
         String url = executerUrl + path;
         logger.fine("sending get to " + url);
         HttpGet get = new HttpGet(url);
-        get.setHeader("Authorization", "Bearer " + credentials.acessToken);
+        get.setHeader("Authorization", "Bearer " + credentials.accessToken);
         HttpResponse response = client.execute(get);
-        int code =response.getStatusLine().getStatusCode();
+        int code = response.getStatusLine().getStatusCode();
         logger.fine("Finished get to path: " + path + "with code: " + code);
         return response;
     }
