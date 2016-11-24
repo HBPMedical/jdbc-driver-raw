@@ -1,39 +1,19 @@
-import junit.framework.TestCase;
 import raw.jdbc.RawDriver;
 import raw.jdbc.oauth2.PasswordCredentials;
 import raw.jdbc.oauth2.TokenResponse;
-import raw.jdbc.oauth2.OAuthUtils;
+import raw.jdbc.RawRestClient;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URLEncoder;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 ;
 
-public class TestDriver extends TestCase {
-
-    protected Properties conf;
-    static Logger logger = Logger.getLogger(TestDriver.class.getName());
-
-    public TestDriver() throws IOException {
-        conf = new Properties();
-        conf.load(getInputStream("test.properties"));
-
-        LogManager.getLogManager()
-                .readConfiguration(getInputStream("test.properties"));
-    }
-
-    private InputStream getInputStream(String path) {
-        return TestDriver.class.getClassLoader().getResourceAsStream(path);
-    }
+public class TestDriver extends RawTest {
 
     public void testGetToken() throws IOException {
-        String authServer = "http://localhost:9000/oauth2/access_token";
+        String authServer = conf.getProperty("auth_server");
         PasswordCredentials credentials = new PasswordCredentials(
                 "raw-jdbc",
                 null,
@@ -41,7 +21,7 @@ public class TestDriver extends TestCase {
                 conf.getProperty("password")
         );
 
-        TokenResponse token = OAuthUtils.getPasswdGrantToken(authServer, credentials);
+        TokenResponse token = RawRestClient.getPasswdGrantToken(authServer, credentials);
         logger.fine("token type: " + token.tokenType);
         logger.fine("token: " + token.acessToken);
         logger.fine("refresh token: " + token.refreshToken);
@@ -83,13 +63,21 @@ public class TestDriver extends TestCase {
                 executor,
                 URLEncoder.encode(authUrl));
         RawDriver driver = new RawDriver();
-        Properties info  = new Properties();
+        Properties info = new Properties();
+        driver.connect(url, info);
+
+        // alternative way of defining user info
+        url = String.format("jdbc:raw:http://%s?auth_url=%s&username=%s&password=%s",
+                executor,
+                authUrl,
+                username,
+                password);
         driver.connect(url, info);
     }
 
     public void testConnectWithProperties() throws SQLException {
 
-        String url ="jdbc:raw:http://localhost:54321";
+        String url = "jdbc:raw:http://localhost:54321";
         RawDriver driver = new RawDriver();
         // Will get the user credentials from the properties file
         driver.connect(url, conf);

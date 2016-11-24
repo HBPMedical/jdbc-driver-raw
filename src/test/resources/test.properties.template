@@ -1,17 +1,22 @@
 # oauth
-#client_id=raw-frontend
-#grant_type=password
-#authentication_server_url=http://localhost:9000/oauth2/access_token
+#edit the properties bellow with the credentials for testing
+auth_server=http://localhost:9000/oauth2/access_token
+executer=http://localhost:54321
 username=some_user
 password=some_password
 
 
-# Logging
+# Logging, probably no need to change these
 handlers = java.util.logging.ConsoleHandler
 .level = ALL
 
-# Console Logging
-java.util.logging.ConsoleHandler.level = ALL
+java.util.logging.FileHandler.formatter = java.util.logging.SimpleFormatter
+java.util.logging.SimpleFormatter.format=%1$tb %1$td, %1$tY %1$tl:%1$tM:%1$tS %1$Tp %2$s %4$s: %5$s%n
+
+java.util.logging.ConsoleHandler.level = FINER
+java.util.logging.ConsoleHandler.formatter = java.util.logging.SimpleFormatter
+
+org.apache.http.level = INFO
 
 
 

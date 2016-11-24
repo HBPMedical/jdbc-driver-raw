@@ -1,5 +1,7 @@
 package raw.jdbc.oauth2;
 
+import raw.jdbc.RawRestClient;
+
 import java.util.Properties;
 
 public class PasswordCredentials {
@@ -22,7 +24,7 @@ public class PasswordCredentials {
     }
 
     public String getGrantType() {
-        return OAuthUtils.PASSWORD;
+        return "password";
     }
 
     public String getClientId() {
@@ -41,14 +43,4 @@ public class PasswordCredentials {
         return password;
     }
 
-    public static PasswordCredentials fromProperties(Properties config) {
-        PasswordCredentials oauthDetails = new PasswordCredentials(
-                config.getProperty(OAuthUtils.CLIENT_ID),
-                config.getProperty(OAuthUtils.CLIENT_SECRET),
-                config.getProperty(OAuthUtils.USERNAME),
-                config.getProperty(OAuthUtils.PASSWORD)
-        );
-
-        return oauthDetails;
-    }
 }

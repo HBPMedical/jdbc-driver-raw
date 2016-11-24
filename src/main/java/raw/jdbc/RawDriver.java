@@ -2,8 +2,8 @@ package raw.jdbc;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.json.simple.parser.ParseException;
 import raw.jdbc.oauth2.TokenResponse;
-import raw.jdbc.oauth2.OAuthUtils;
 import raw.jdbc.oauth2.PasswordCredentials;
 
 import java.io.IOException;
@@ -11,30 +11,36 @@ import java.net.*;
 import java.sql.*;
 import java.util.List;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class RawDriver implements Driver {
 
     static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
     static final String JDBC_CLIENT_ID = "raw-jdbc";
-    static final String GRANT_TYPE = "password";
-    static final String EXEC_PROP_NAME = "executor";
-    static final String AUTH_PROP_NAME = "auth_url";
+    static final String EXEC_PROPERTY = "executor";
+    static final String AUTH_PROPERTY = "auth_url";
+    static final String USER_PROPERTY = "username";
+    static final String PASSWD_PROPERTY = "password";
 
     static Logger logger = Logger.getLogger(RawDriver.class.getName());
 
     public Connection connect(String url, Properties info) throws SQLException {
 
         Properties props = parseProperties(url, info);
-        PasswordCredentials credentials = PasswordCredentials.fromProperties(props);
-        String authUrl = props.getProperty(AUTH_PROP_NAME);
-        String executer = props.getProperty(EXEC_PROP_NAME);
+        PasswordCredentials credentials = new PasswordCredentials(
+                JDBC_CLIENT_ID,
+                null,
+                props.getProperty(USER_PROPERTY),
+                props.getProperty(PASSWD_PROPERTY)
+        );
+
+        String authUrl = props.getProperty(AUTH_PROPERTY);
+        String executer = props.getProperty(EXEC_PROPERTY);
         try {
-            TokenResponse token = OAuthUtils.getPasswdGrantToken(authUrl, credentials);
+            TokenResponse token = RawRestClient.getPasswdGrantToken(authUrl, credentials);
             return new RawConnection(executer, authUrl, token);
         } catch (IOException e) {
-            throw new SQLException("Unable to get bearer token for jdbc connection", e);
+            throw new SQLException("Unable to get bearer token for jdbc connection");
         }
     }
 
@@ -48,7 +54,6 @@ public class RawDriver implements Driver {
             String cleaned = url.substring(9);
             URL uri = new URL(cleaned);
             List<NameValuePair> paramList = URLEncodedUtils.parse(new URI(cleaned), "UTF-8");
-
             for (NameValuePair nvp : paramList) {
                 properties.put(nvp.getName(), nvp.getValue());
             }
@@ -58,7 +63,7 @@ public class RawDriver implements Driver {
                 executor += ":" + uri.getPort();
             }
 
-            properties.setProperty(EXEC_PROP_NAME, executor);
+            properties.setProperty(EXEC_PROPERTY, executor);
             String userinfo = uri.getUserInfo();
             if (userinfo != null) {
                 int idx = userinfo.indexOf(':');
@@ -94,13 +99,13 @@ public class RawDriver implements Driver {
         Properties urlParams = parseUrl(url);
 
         Properties finalInfo = new Properties();
-        finalInfo.setProperty(AUTH_PROP_NAME, AUTH_SERVER_URL);
+        finalInfo.setProperty(AUTH_PROPERTY, AUTH_SERVER_URL);
 
         // copies all relevant properties giving priority to the ones defined in the url
         String[] properties = {
-                AUTH_PROP_NAME,
-                OAuthUtils.USERNAME,
-                OAuthUtils.PASSWORD
+                AUTH_PROPERTY,
+                USER_PROPERTY,
+                PASSWD_PROPERTY
         };
 
         for (String prop : properties) {
@@ -111,10 +116,8 @@ public class RawDriver implements Driver {
             }
         }
         // sets the executor property from the url parameters
-        finalInfo.setProperty(EXEC_PROP_NAME, urlParams.getProperty(EXEC_PROP_NAME));
-        finalInfo.setProperty(OAuthUtils.CLIENT_ID, JDBC_CLIENT_ID);
-        finalInfo.setProperty(OAuthUtils.GRANT_TYPE, GRANT_TYPE);
-        if (finalInfo.getProperty(AUTH_PROP_NAME) == null) {
+        finalInfo.setProperty(EXEC_PROPERTY, urlParams.getProperty(EXEC_PROPERTY));
+        if (finalInfo.getProperty(AUTH_PROPERTY) == null) {
             throw new SQLException("Could not find authorization url property");
         }
         return finalInfo;
