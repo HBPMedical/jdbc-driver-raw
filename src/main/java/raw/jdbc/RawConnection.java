@@ -8,15 +8,12 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 public class RawConnection implements Connection {
-
-    TokenResponse token;
-    String executer;
     String authUrl;
+    RawRestClient client;
 
-    RawConnection(String executer, String authUrl, TokenResponse authToken) {
-        this.token = authToken;
-        this.executer=executer;
+    RawConnection(String executor, String authUrl, TokenResponse authToken) {
         this.authUrl = authUrl;
+        client = new RawRestClient(executor, authToken);
     }
 
     public Statement createStatement() throws SQLException {

@@ -79,7 +79,7 @@ public class TestDriver extends RawTest {
 
         String url = "jdbc:raw:http://localhost:54321";
         RawDriver driver = new RawDriver();
-        // Will get the user credentials from the properties file
+        // Will get all other settings from the property file
         driver.connect(url, conf);
     }
 
