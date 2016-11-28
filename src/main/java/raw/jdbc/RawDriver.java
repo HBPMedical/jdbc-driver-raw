@@ -2,9 +2,8 @@ package raw.jdbc;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.json.simple.parser.ParseException;
-import raw.jdbc.oauth2.TokenResponse;
 import raw.jdbc.oauth2.PasswordCredentials;
+import raw.jdbc.oauth2.TokenResponse;
 
 import java.io.IOException;
 import java.net.*;
@@ -46,7 +45,7 @@ public class RawDriver implements Driver {
 
     public static Properties parseUrl(String url) throws SQLException {
         if (!url.startsWith("jdbc:raw:")) {
-            throw new SQLException("Invalid url to start with 'jdbc:raw:'");
+            throw new SQLException("Invalid url, expected url starting with 'jdbc:raw:'");
         }
         try {
             Properties properties = new Properties();
@@ -79,9 +78,9 @@ public class RawDriver implements Driver {
             }
             return properties;
         } catch (MalformedURLException e) {
-            throw new SQLException("Invalid url", e);
+            throw new SQLException("Invalid url");
         } catch (URISyntaxException e) {
-            throw new SQLException("Invalid uri", e);
+            throw new SQLException("Invalid url");
         }
     }
 
