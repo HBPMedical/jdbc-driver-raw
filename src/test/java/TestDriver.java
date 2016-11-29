@@ -62,14 +62,14 @@ public class TestDriver extends RawTest {
     }
 
     @Test
-    public void testConnectWithUrl() throws SQLException {
+    public void testConnectWithUrl() throws SQLException, UnsupportedEncodingException {
         String executor = "localhost:54321";
         String authUrl = "http://localhost:9000/oauth2/access_token";
         String username = conf.getProperty("username");
         String password = conf.getProperty("password");
         String url = String.format("jdbc:raw:http://%s:%s@%s?auth_url=%s",
-                URLEncoder.encode(username),
-                URLEncoder.encode(password),
+                URLEncoder.encode(username, "UTF8"),
+                URLEncoder.encode(password, "UTF8"),
                 executor,
                 URLEncoder.encode(authUrl));
         RawDriver driver = new RawDriver();
