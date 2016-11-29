@@ -1,6 +1,7 @@
 package raw.jdbc;
 
-import raw.jdbc.oauth2.TokenResponse;
+import raw.jdbc.rawclient.requests.TokenResponse;
+import raw.jdbc.rawclient.RawRestClient;
 
 import java.sql.*;
 import java.util.Map;

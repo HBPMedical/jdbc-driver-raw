@@ -2,9 +2,9 @@ package raw.jdbc;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import org.json.simple.parser.ParseException;
-import raw.jdbc.oauth2.TokenResponse;
-import raw.jdbc.oauth2.PasswordCredentials;
+import raw.jdbc.rawclient.requests.TokenResponse;
+import raw.jdbc.rawclient.requests.PasswordTokenRequest;
+import raw.jdbc.rawclient.RawRestClient;
 
 import java.io.IOException;
 import java.net.*;
@@ -17,22 +17,24 @@ public class RawDriver implements Driver {
 
     static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
     static final String JDBC_CLIENT_ID = "raw-jdbc";
+    static final String GRANT_TYPE = "password";
     static final String EXEC_PROPERTY = "executor";
     static final String AUTH_PROPERTY = "auth_url";
     static final String USER_PROPERTY = "username";
     static final String PASSWD_PROPERTY = "password";
+
 
     static Logger logger = Logger.getLogger(RawDriver.class.getName());
 
     public Connection connect(String url, Properties info) throws SQLException {
 
         Properties props = parseProperties(url, info);
-        PasswordCredentials credentials = new PasswordCredentials(
-                JDBC_CLIENT_ID,
-                null,
-                props.getProperty(USER_PROPERTY),
-                props.getProperty(PASSWD_PROPERTY)
-        );
+        PasswordTokenRequest credentials = new PasswordTokenRequest();
+        credentials.client_id = JDBC_CLIENT_ID;
+        credentials.client_secret = null;
+        credentials.grant_type = GRANT_TYPE;
+        credentials.username = props.getProperty(USER_PROPERTY);
+        credentials.password = props.getProperty(PASSWD_PROPERTY);
 
         String authUrl = props.getProperty(AUTH_PROPERTY);
         String executer = props.getProperty(EXEC_PROPERTY);
@@ -40,7 +42,7 @@ public class RawDriver implements Driver {
             TokenResponse token = RawRestClient.getPasswdGrantToken(authUrl, credentials);
             return new RawConnection(executer, authUrl, token);
         } catch (IOException e) {
-            throw new SQLException("Unable to get bearer token for jdbc connection");
+            throw new SQLException("Unable to get bearer token for jdbc connection: " + e.getMessage());
         }
     }
 
@@ -79,9 +81,9 @@ public class RawDriver implements Driver {
             }
             return properties;
         } catch (MalformedURLException e) {
-            throw new SQLException("Invalid url", e);
+            throw new SQLException("Invalid url: " + e.getMessage());
         } catch (URISyntaxException e) {
-            throw new SQLException("Invalid uri", e);
+            throw new SQLException("Invalid url: " + e.getMessage());
         }
     }
 

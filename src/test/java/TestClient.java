@@ -1,36 +1,30 @@
 import org.json.simple.parser.ParseException;
-import raw.jdbc.RawRestClient;
-import raw.jdbc.oauth2.PasswordCredentials;
-import raw.jdbc.oauth2.TokenResponse;
+import org.junit.Before;
+import org.junit.Test;
+import raw.jdbc.rawclient.requests.QueryStartResponse;
+import raw.jdbc.rawclient.RawRestClient;
+import raw.jdbc.rawclient.requests.PasswordTokenRequest;
+import raw.jdbc.rawclient.requests.TokenResponse;
 
 import java.io.IOException;
-import java.util.Map;
 
 public class TestClient extends RawTest {
 
     RawRestClient client;
 
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        String authServer = conf.getProperty("auth_server");
-        PasswordCredentials credentials = new PasswordCredentials(
-                "raw-jdbc",
-                null,
-                conf.getProperty("username"),
-                conf.getProperty("password")
-        );
-
+    public TestClient() throws IOException {
+        super();
         TokenResponse token = RawRestClient.getPasswdGrantToken(authServer, credentials);
         client = new RawRestClient(conf.getProperty("executor"), token);
     }
 
+    @Test
     public void testVersion() throws IOException, ParseException {
         String version = client.getVersion();
         logger.fine("got version number " + version);
     }
 
+    @Test
     public void testSchemas() throws IOException, ParseException {
         String[] schemas = client.getSchemas();
         for (String s : schemas) {
@@ -38,13 +32,15 @@ public class TestClient extends RawTest {
         }
     }
 
+    @Test
     public void testAsyncQuery() throws IOException, ParseException {
-        Long id = client.asyncQueryStart("collection(1,2,4)");
+        int id = client.asyncQueryStart("collection(1,2,4)");
         logger.fine("got queryId: " + id);
     }
 
+    @Test
     public void testQueryStart() throws IOException, ParseException {
-        Map results = client.queryStart("collection(1,2,4)", 100);
-        logger.fine("got results: " + results);
+        QueryStartResponse resp = client.queryStart("collection(1,2,4)", 100);
+        logger.fine("execution time: " + resp.executionTime);
     }
 }

@@ -1,10 +1,28 @@
 package raw.jdbc;
 
+import raw.jdbc.rawclient.RawRestClient;
+import raw.jdbc.rawclient.requests.QueryStartResponse;
+
+import java.io.IOException;
 import java.sql.*;
 
 public class RawStatement implements Statement {
+    RawRestClient client;
+    int RESULT_PER_PAGE = 1000;
+
+
+    RawStatement(RawRestClient client) {
+        this.client = client;
+    }
+
     public ResultSet executeQuery(String sql) throws SQLException {
-        return null;
+        try {
+            QueryStartResponse response = client.queryStart(sql, RESULT_PER_PAGE);
+            return new RawResultSet(client, response);
+
+        } catch (IOException e) {
+            throw new SQLException("Query failed with error: " + e.getMessage());
+        }
     }
 
     public int executeUpdate(String sql) throws SQLException {
@@ -12,7 +30,7 @@ public class RawStatement implements Statement {
     }
 
     public void close() throws SQLException {
-
+        //TODO: if
     }
 
     public int getMaxFieldSize() throws SQLException {
