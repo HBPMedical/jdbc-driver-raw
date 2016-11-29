@@ -18,7 +18,7 @@ public class RawStatement implements Statement {
     public ResultSet executeQuery(String sql) throws SQLException {
         try {
             QueryStartResponse response = client.queryStart(sql, RESULT_PER_PAGE);
-            return new RawResultSet(client, response);
+            return new RawResultSet(client, response, RESULT_PER_PAGE);
 
         } catch (IOException e) {
             throw new SQLException("Query failed with error: " + e.getMessage());

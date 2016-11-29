@@ -6,6 +6,7 @@ import raw.jdbc.rawclient.requests.TokenResponse;
 import raw.jdbc.rawclient.requests.PasswordTokenRequest;
 import raw.jdbc.rawclient.RawRestClient;
 
+
 import java.io.IOException;
 import java.net.*;
 import java.sql.*;
@@ -15,15 +16,13 @@ import java.util.logging.Logger;
 
 public class RawDriver implements Driver {
 
-    static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
-    static final String JDBC_CLIENT_ID = "raw-jdbc";
-    static final String GRANT_TYPE = "password";
-    static final String EXEC_PROPERTY = "executor";
-    static final String AUTH_PROPERTY = "auth_url";
-    static final String USER_PROPERTY = "username";
-    static final String PASSWD_PROPERTY = "password";
-
-
+    private static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
+    private static final String JDBC_CLIENT_ID = "raw-jdbc";
+    private static final String GRANT_TYPE = "password";
+    private static final String EXEC_PROPERTY = "executor";
+    private static final String AUTH_PROPERTY = "auth_url";
+    private static final String USER_PROPERTY = "username";
+    private static final String PASSWD_PROPERTY = "password";
     static Logger logger = Logger.getLogger(RawDriver.class.getName());
 
     public Connection connect(String url, Properties info) throws SQLException {
@@ -48,7 +47,7 @@ public class RawDriver implements Driver {
 
     public static Properties parseUrl(String url) throws SQLException {
         if (!url.startsWith("jdbc:raw:")) {
-            throw new SQLException("Invalid url to start with 'jdbc:raw:'");
+            throw new SQLException("Invalid url, expected url starting with 'jdbc:raw:'");
         }
         try {
             Properties properties = new Properties();
@@ -94,7 +93,6 @@ public class RawDriver implements Driver {
      * @param url  url with parameters to parse
      * @param info properties provided by the system
      * @return New properties with default values
-     * @throws URISyntaxException
      */
     private static Properties parseProperties(String url, Properties info) throws SQLException {
         //Parses url parameters into a Map
