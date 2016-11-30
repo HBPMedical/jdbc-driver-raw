@@ -72,7 +72,6 @@ public class TestConnection extends RawTest {
 
     private String objToString(Object inobj) {
         Object obj = convertTypes(inobj);
-
         if (obj.getClass() == String.class) {
             return "\"" + obj + "\"";
         } else if (obj.getClass() == Integer.class ||

@@ -9,8 +9,10 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class RawResultSet implements ResultSet {
     private RawRestClient client;
@@ -19,6 +21,7 @@ public class RawResultSet implements ResultSet {
     int index;
     boolean isRecord;
     String[] columnNames;
+    static Logger logger = Logger.getLogger(RawResultSet.class.getName());
 
     RawResultSet(RawRestClient client, QueryStartResponse response, int resultsPerPage) {
         this.client = client;
@@ -65,10 +68,13 @@ public class RawResultSet implements ResultSet {
             if (isRecord) {
                 Map<String, T> map = (Map) obj;
                 return map.get(columnNames[columnIndex]);
-            //TODO: check if this is allowed
-            } else if ( obj.getClass().isArray()) {
+                //TODO: check if this is allowed
+            } else if (obj.getClass().isArray()) {
                 T[] ary = (T[]) obj;
-                return  ary[columnIndex];
+                return ary[columnIndex];
+            } else if (obj.getClass() == ArrayList.class) {
+                ArrayList<T> ary = (ArrayList) obj;
+                return ary.get(columnIndex);
             } else if (columnIndex != 0) {
                 throw new IndexOutOfBoundsException("Row is not record or array so it has only one column");
 
