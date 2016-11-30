@@ -18,7 +18,7 @@ public class RawConnection implements Connection {
     }
 
     public Statement createStatement() throws SQLException {
-        throw new UnsupportedOperationException("not implemented");
+        return new RawStatement(client);
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {

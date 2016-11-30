@@ -28,6 +28,10 @@ public class RawTest {
             credentials.username = conf.getProperty("username");
             credentials.password = conf.getProperty("password");
             authServer = conf.getProperty("auth_server");
+            if (authServer == null) {
+                authServer = "http://localhost:9000/oauth2/access_token";
+                logger.warning("auth server property not found using default value: http://localhost:9000/oauth2/access_token");
+            }
 
         } catch (IOException e){
             logger.severe("could not load configuration: " + e.getMessage());

@@ -66,7 +66,7 @@ public class RawResultSet implements ResultSet {
                 Map<String, T> map = (Map) obj;
                 return map.get(columnNames[columnIndex]);
             //TODO: check if this is allowed
-            } else if ( obj.getClass() == Array.class) {
+            } else if ( obj.getClass().isArray()) {
                 T[] ary = (T[]) obj;
                 return  ary[columnIndex];
             } else if (columnIndex != 0) {

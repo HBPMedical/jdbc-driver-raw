@@ -42,7 +42,6 @@ public class RawRestClient {
         HttpPost post = new HttpPost(authUrl);
 
         String json = mapper.writeValueAsString(credentials);
-        logger.fine("sending request for token, json: " + json);
         StringEntity entity = new StringEntity(json, "UTF-8");
 
         entity.setContentType("application/json");
