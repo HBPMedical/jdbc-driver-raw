@@ -18,7 +18,7 @@ public class RawConnection implements Connection {
     }
 
     public Statement createStatement() throws SQLException {
-        return new RawStatement(client);
+        return new RawStatement(client, this);
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {

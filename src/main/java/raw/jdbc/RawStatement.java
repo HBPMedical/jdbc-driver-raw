@@ -9,16 +9,17 @@ import java.sql.*;
 public class RawStatement implements Statement {
     RawRestClient client;
     int RESULT_PER_PAGE = 1000;
+    RawConnection connection;
 
-
-    RawStatement(RawRestClient client) {
+    RawStatement(RawRestClient client, RawConnection parent) {
         this.client = client;
+        this.connection = parent;
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
         try {
             QueryStartResponse response = client.queryStart(sql, RESULT_PER_PAGE);
-            return new RawResultSet(client, response, RESULT_PER_PAGE);
+            return new RawResultSet(client, response, this);
 
         } catch (IOException e) {
             throw new SQLException("Query failed with error: " + e.getMessage());
@@ -26,11 +27,11 @@ public class RawStatement implements Statement {
     }
 
     public int executeUpdate(String sql) throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void close() throws SQLException {
-        //TODO: if
+        //TODO: close all living queries?
     }
 
     public int getMaxFieldSize() throws SQLException {
@@ -130,7 +131,7 @@ public class RawStatement implements Statement {
     }
 
     public Connection getConnection() throws SQLException {
-        return null;
+        return this.connection;
     }
 
     public boolean getMoreResults(int current) throws SQLException {
