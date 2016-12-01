@@ -2,28 +2,24 @@ package raw.jdbc;
 
 import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.QueryStartResponse;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.sql.*;
 
 public class RawStatement implements Statement {
     RawRestClient client;
-    int RESULT_PER_PAGE = 1000;
+
     RawConnection connection;
 
     RawStatement(RawRestClient client, RawConnection parent) {
         this.client = client;
         this.connection = parent;
+
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
-        try {
-            QueryStartResponse response = client.queryStart(sql, RESULT_PER_PAGE);
-            return new RawResultSet(client, response, this);
-
-        } catch (IOException e) {
-            throw new SQLException("Query failed with error: " + e.getMessage());
-        }
+        return new RawResultSet(client, sql, this);
     }
 
     public int executeUpdate(String sql) throws SQLException {
@@ -35,99 +31,101 @@ public class RawStatement implements Statement {
     }
 
     public int getMaxFieldSize() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getMaxFieldSize");
     }
 
     public void setMaxFieldSize(int max) throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented setMaxFieldSize");
     }
 
     public int getMaxRows() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getMaxRows");
     }
 
     public void setMaxRows(int max) throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented setMaxRows");
     }
 
     public void setEscapeProcessing(boolean enable) throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented setEscapeProcessing");
     }
 
     public int getQueryTimeout() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getQueryTimeout");
     }
 
     public void setQueryTimeout(int seconds) throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented setQueryTimeout");
     }
 
     public void cancel() throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented cancel");
     }
 
     public SQLWarning getWarnings() throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getWarnings");
     }
 
     public void clearWarnings() throws SQLException {
+        throw new UnsupportedOperationException("Not implemented clearWarnings");
 
     }
 
     public void setCursorName(String name) throws SQLException {
+        throw new UnsupportedOperationException("Not implemented setCursorName");
 
     }
 
     public boolean execute(String sql) throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Not implemented execute");
     }
 
     public ResultSet getResultSet() throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getResultSet");
     }
 
     public int getUpdateCount() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getUpdateCount");
     }
 
     public boolean getMoreResults() throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Not implemented getMoreResults");
     }
 
     public void setFetchDirection(int direction) throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented setFetchDirection");
     }
 
     public int getFetchDirection() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getFetchDirection");
     }
 
     public void setFetchSize(int rows) throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented setFetchSize");
     }
 
     public int getFetchSize() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getFetchSize");
     }
 
     public int getResultSetConcurrency() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getResultSetConcurrency");
     }
 
     public int getResultSetType() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Not implemented getResultSetType");
     }
 
     public void addBatch(String sql) throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented addBatch");
     }
 
     public void clearBatch() throws SQLException {
-
+        throw new UnsupportedOperationException("Not implemented clearBatch");
     }
 
     public int[] executeBatch() throws SQLException {
-        return new int[0];
+        throw new UnsupportedOperationException("Not implemented getGeneratedKeys");
     }
 
     public Connection getConnection() throws SQLException {
@@ -135,23 +133,23 @@ public class RawStatement implements Statement {
     }
 
     public boolean getMoreResults(int current) throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Not implemented getMoreResults");
     }
 
     public ResultSet getGeneratedKeys() throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getGeneratedKeys");
     }
 
     public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {

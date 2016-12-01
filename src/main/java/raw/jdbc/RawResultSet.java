@@ -9,52 +9,99 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class RawResultSet implements ResultSet {
     private RawRestClient client;
-    QueryStartResponse queryStart;
-    int index;
-    boolean isRecord;
-    String[] columnNames;
-    RawStatement statement;
+    QueryStartResponse query;
+
+    private boolean isRecord;
+    private String[] columnNames;
+    private RawStatement statement;
+    private int currentRow = -1;
+    private int currentIndex = -1;
+    private String sql;
+    private int resultsPerPage = 1000;
 
     static Logger logger = Logger.getLogger(RawResultSet.class.getName());
 
-    RawResultSet(RawRestClient client, QueryStartResponse response, RawStatement parent) {
+    RawResultSet(RawRestClient client, String sql, RawStatement parent) {
         this.client = client;
-        this.queryStart = response;
         this.statement = parent;
-        this.index = 0;
+        this.sql = sql;
+    }
 
-        if (queryStart.data.length > 0) {
-            Object obj = queryStart.data[0];
-            if (obj.getClass() == LinkedHashMap.class) {
-                this.isRecord = true;
-                Map<String, Object> map = (Map) obj;
-                columnNames = map.keySet().toArray(new String[]{});
-            } else {
-                this.isRecord = false;
+    private void startQuery() throws SQLException {
+        try {
+            query = client.queryStart(sql, resultsPerPage);
+            if (query.data.length > 0) {
+                Object obj = query.data[0];
+                if (obj.getClass() == LinkedHashMap.class) {
+                    this.isRecord = true;
+                    Map<String, Object> map = (Map) obj;
+                    columnNames = map.keySet().toArray(new String[]{});
+                } else {
+                    this.isRecord = false;
+                }
             }
+            logger.fine("initialized query token: " + query.token + " hasMore: " + query.hasMore);
+        } catch (IOException e) {
+            throw new SQLException("could not start query: " + e.getMessage());
         }
+
+    }
+
+    public boolean isBeforeFirst() throws SQLException {
+        return currentIndex == -1;
+    }
+
+    public boolean isAfterLast() throws SQLException {
+        return (currentIndex >= query.data.length) && (!query.hasMore);
+    }
+
+    public boolean isFirst() throws SQLException {
+        return currentIndex == 0;
+    }
+
+    public boolean isLast() throws SQLException {
+        return (currentIndex == (query.data.length - 1) && !query.hasMore);
     }
 
     public boolean next() throws SQLException {
-        index += 1;
-        if (index >= queryStart.data.length) {
-            return false;
-        } else {
+        if (currentIndex == -1) {
+            startQuery();
+        }
+
+        if (currentIndex < query.data.length - 1) {
+            currentIndex++;
+            currentRow++;
             return true;
+
+        } else {
+            if (query.hasMore) {
+                try {
+                    logger.fine("getting more results for query " + query.token);
+                    query = client.queryNext(query.token, resultsPerPage);
+                    currentIndex = 0;
+                    currentRow++;
+                    return true;
+                } catch (IOException e) {
+                    throw new SQLException("Could not get next page for query error:" + e.getMessage());
+                }
+            } else {
+                if (currentIndex == query.data.length - 1) {
+                    currentIndex++;
+                }
+                return false;
+            }
         }
     }
 
     public void close() throws SQLException {
         try {
-            client.queryClose(queryStart.token);
+            client.queryClose(query.token);
         } catch (IOException e) {
             throw new SQLException("query-close failed: " + e.getMessage());
         }
@@ -65,7 +112,12 @@ public class RawResultSet implements ResultSet {
     }
 
     private <T> T castColumnToType(int columnIndex) {
-        Object obj = queryStart.data[index];
+
+        if (currentIndex < 0) {
+            return null;
+        }
+
+        Object obj = query.data[currentIndex];
         if (obj != null) {
             if (isRecord) {
                 Map<String, T> map = (Map) obj;
@@ -78,10 +130,28 @@ public class RawResultSet implements ResultSet {
                 ArrayList<T> ary = (ArrayList) obj;
                 return ary.get(columnIndex);
             } else if (columnIndex != 0) {
-                throw new IndexOutOfBoundsException("Row is not record or array so it has only one column");
+                throw new IndexOutOfBoundsException("Row is not record or collection so it has only one column");
 
             } else {
                 return (T) obj;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private <T> T castColumnToType(String columnLabel) {
+        if (currentIndex < 0) {
+            return null;
+        }
+
+        Object obj = query.data[currentIndex];
+        if (obj != null) {
+            if (isRecord) {
+                LinkedHashMap<String, T> map = (LinkedHashMap) obj;
+                return map.get(columnLabel);
+            } else {
+                throw new IndexOutOfBoundsException("column labels are only allowed in record types");
             }
         } else {
             return null;
@@ -114,7 +184,13 @@ public class RawResultSet implements ResultSet {
     }
 
     public float getFloat(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        try {
+            double d = castColumnToType(columnIndex);
+            return (float) d;
+        } catch (ClassCastException e) {
+            Object obj = castColumnToType(columnIndex);
+            throw new ClassCastException(obj.getClass().getName() + " cannot be converted to float");
+        }
     }
 
     public double getDouble(int columnIndex) throws SQLException {
@@ -153,21 +229,6 @@ public class RawResultSet implements ResultSet {
         return null;
     }
 
-    private <T> T castColumnToType(String columnLabel) {
-        Object obj = queryStart.data[index];
-        logger.fine("type " + obj.getClass().getName());
-        if (obj != null) {
-            if (isRecord) {
-                LinkedHashMap<String, T> map = (LinkedHashMap) obj;
-                return map.get(columnLabel);
-            } else {
-                throw new IndexOutOfBoundsException("column labels are only allowed in record types");
-            }
-        } else {
-            return null;
-        }
-    }
-
     public String getString(String columnLabel) throws SQLException {
         Object obj = castColumnToType(columnLabel);
         return obj.toString();
@@ -194,7 +255,16 @@ public class RawResultSet implements ResultSet {
     }
 
     public float getFloat(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        // In json there is no differentiation between doubles and floats
+        // our jackson parser is returning Doubles all the time so we convert in this particular case
+        try {
+            double d = castColumnToType(columnLabel);
+            return (float) d;
+        } catch (ClassCastException e) {
+            Object obj = castColumnToType(columnLabel);
+            throw new ClassCastException(obj.getClass().getName() + " cannot be converted to float");
+        }
+
     }
 
     public double getDouble(String columnLabel) throws SQLException {
@@ -210,43 +280,43 @@ public class RawResultSet implements ResultSet {
     }
 
     public Date getDate(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Time getTime(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Timestamp getTimestamp(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public InputStream getAsciiStream(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public InputStream getBinaryStream(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public SQLWarning getWarnings() throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not supported");
     }
 
     public void clearWarnings() throws SQLException {
-
+        throw new UnsupportedOperationException("Not supported");
     }
 
     public String getCursorName() throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public ResultSetMetaData getMetaData() throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Object getObject(int columnIndex) throws SQLException {
@@ -258,105 +328,102 @@ public class RawResultSet implements ResultSet {
     }
 
     public int findColumn(String columnLabel) throws SQLException {
-        return 0;
+        int idx = Arrays.asList(columnNames).indexOf(columnLabel);
+        return idx;
     }
 
     public Reader getCharacterStream(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Reader getCharacterStream(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        return null;
+        try {
+            Double d = castColumnToType(columnIndex);
+            return BigDecimal.valueOf(d);
+        } catch (ClassCastException e) {
+            Object obj = castColumnToType(columnIndex);
+            throw new ClassCastException(obj.getClass().getName() + "Could not be converted to BigDecimal");
+        }
     }
 
     public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-        return null;
-    }
-
-    public boolean isBeforeFirst() throws SQLException {
-        return false;
-    }
-
-    public boolean isAfterLast() throws SQLException {
-        return false;
-    }
-
-    public boolean isFirst() throws SQLException {
-        return false;
-    }
-
-    public boolean isLast() throws SQLException {
-        return false;
+        try {
+            Double d = castColumnToType(columnLabel);
+            return BigDecimal.valueOf(d);
+        } catch (ClassCastException e) {
+            Object obj = castColumnToType(columnLabel);
+            throw new ClassCastException(obj.getClass().getName() + "Could not be converted to BigDecimal");
+        }
     }
 
     public void beforeFirst() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void afterLast() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean first() throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean last() throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public int getRow() throws SQLException {
-        return 0;
+        return currentRow;
     }
 
     public boolean absolute(int row) throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean relative(int rows) throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean previous() throws SQLException {
-        if (index < 1) {
+        if (currentIndex < 1) {
             return false;
         } else {
-            index --;
+            currentIndex--;
+            currentRow--;
             return true;
         }
-
-    }
-
-    public void setFetchDirection(int direction) throws SQLException {
-
-    }
-
-    public int getFetchDirection() throws SQLException {
-        return 0;
     }
 
     public void setFetchSize(int rows) throws SQLException {
-
+        this.resultsPerPage = rows;
     }
 
     public int getFetchSize() throws SQLException {
-        return 0;
+        return resultsPerPage;
+    }
+
+    public void setFetchDirection(int direction) throws SQLException {
+        throw new UnsupportedOperationException("Unsupported operation");
+    }
+
+    public int getFetchDirection() throws SQLException {
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public int getType() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public int getConcurrency() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean rowUpdated() throws SQLException {
-        return false;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean rowInserted() throws SQLException {
@@ -520,103 +587,119 @@ public class RawResultSet implements ResultSet {
     }
 
     public void insertRow() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void updateRow() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void deleteRow() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void refreshRow() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void cancelRowUpdates() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void moveToInsertRow() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public void moveToCurrentRow() throws SQLException {
-
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public Statement getStatement() throws SQLException {
-        return null;
+        return this.statement;
     }
 
     public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Ref getRef(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Blob getBlob(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not supported");
     }
 
     public Clob getClob(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not supported");
     }
 
     public Array getArray(int columnIndex) throws SQLException {
-        return null;
+        return castColumnToType(columnIndex);
     }
 
     public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
         return null;
     }
 
+    public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
+        return castColumnToType(columnIndex);
+    }
+
+    public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
+        return castColumnToType(columnLabel);
+    }
+
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        throw new UnsupportedOperationException("Not implemented");
+    }
+
     public Ref getRef(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Blob getBlob(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Clob getClob(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Array getArray(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public URL getURL(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public URL getURL(String columnLabel) throws SQLException {
@@ -656,11 +739,11 @@ public class RawResultSet implements ResultSet {
     }
 
     public RowId getRowId(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public RowId getRowId(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
@@ -672,7 +755,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public int getHoldability() throws SQLException {
-        return 0;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public boolean isClosed() throws SQLException {
@@ -696,19 +779,19 @@ public class RawResultSet implements ResultSet {
     }
 
     public NClob getNClob(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public NClob getNClob(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Unsupported operation");
     }
 
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public SQLXML getSQLXML(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
@@ -720,19 +803,19 @@ public class RawResultSet implements ResultSet {
     }
 
     public String getNString(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public String getNString(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Reader getNCharacterStream(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public Reader getNCharacterStream(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
@@ -845,21 +928,5 @@ public class RawResultSet implements ResultSet {
 
     public void updateNClob(String columnLabel, Reader reader) throws SQLException {
         throw new UnsupportedOperationException("Unsupported operation");
-    }
-
-    public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        return null;
-    }
-
-    public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-        return null;
-    }
-
-    public <T> T unwrap(Class<T> iface) throws SQLException {
-        return null;
-    }
-
-    public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        return false;
     }
 }

@@ -82,9 +82,16 @@ public class RawRestClient {
         QueryStartRequest request = new QueryStartRequest();
         request.query = query;
         request.resultsPerPage = resultsPerPage;
-        QueryStartResponse response = doJsonPost("/query-start", request, QueryStartResponse.class);
-        return response;
+        return doJsonPost("/query-start", request, QueryStartResponse.class);
     }
+
+    public QueryStartResponse queryNext(String queryToken, int resultsPerPage) throws IOException {
+        QueryNextRequest request = new QueryNextRequest();
+        request.token = queryToken;
+        request.resultsPerPage = resultsPerPage;
+        return doJsonPost("/query-next", request, QueryStartResponse.class);
+    }
+
     public void queryClose(String token) throws IOException {
         QueryCloseRequest request = new QueryCloseRequest();
         request.token = token;
@@ -115,10 +122,7 @@ public class RawRestClient {
         StringEntity entity = new StringEntity(json, "UTF-8");
         entity.setContentType("application/json");
         post.setEntity(entity);
-        HttpResponse response = client.execute(post);
-        int code = response.getStatusLine().getStatusCode();
-        logger.fine("Finished get to path: '" + path + "' with code: " + code);
-        return response;
+        return client.execute(post);
     }
 
     private <T> T doJsonPost(String path, Object request, Class<T> responseClass) throws IOException {
@@ -127,7 +131,7 @@ public class RawRestClient {
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
             String content = EntityUtils.toString(response.getEntity());
-            logger.warning("Request to " + path + " response: " + content);
+            logger.warning("Request to " + path + "failed code: " + code + " response: " + content);
             throw new IOException("json post request to " + path + "failed with code " + code);
         }
         return getObjFromResponse(response, responseClass);
@@ -138,10 +142,7 @@ public class RawRestClient {
         logger.fine("sending get to " + url);
         HttpGet get = new HttpGet(url);
         get.setHeader("Authorization", "Bearer " + credentials.access_token);
-        HttpResponse response = client.execute(get);
-        int code = response.getStatusLine().getStatusCode();
-        logger.fine("Finished get to path: " + path + "with code: " + code);
-        return response;
+        return client.execute(get);
     }
 
     private <T> T doGet(String path, Class<T> tClass) throws IOException {
