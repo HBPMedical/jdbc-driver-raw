@@ -111,36 +111,34 @@ public class RawResultSet implements ResultSet {
         return false;
     }
 
-    private <T> T castColumnToType(int columnIndex) {
-
+    private <T> T castFromColIndex(int columnIndex, Class<T> tClass) {
         if (currentIndex < 0) {
             return null;
         }
-
         Object obj = query.data[currentIndex];
         if (obj != null) {
             if (isRecord) {
-                Map<String, T> map = (Map) obj;
-                return map.get(columnNames[columnIndex]);
+                Map<String, Object> map = (Map) obj;
+                return castToType(map.get(columnNames[columnIndex]), tClass);
                 //TODO: check if this is allowed
             } else if (obj.getClass().isArray()) {
-                T[] ary = (T[]) obj;
-                return ary[columnIndex];
+                Object[] ary = (Object[]) obj;
+                return castToType(ary[columnIndex], tClass);
             } else if (obj.getClass() == ArrayList.class) {
-                ArrayList<T> ary = (ArrayList) obj;
-                return ary.get(columnIndex);
+                ArrayList<Object> ary = (ArrayList) obj;
+                return castToType(ary.get(columnIndex), tClass);
             } else if (columnIndex != 0) {
                 throw new IndexOutOfBoundsException("Row is not record or collection so it has only one column");
 
             } else {
-                return (T) obj;
+                return castToType(obj, tClass);
             }
         } else {
             return null;
         }
     }
 
-    private <T> T castColumnToType(String columnLabel) {
+    private <T> T castFromColLabel(String columnLabel, Class<T> tClass) {
         if (currentIndex < 0) {
             return null;
         }
@@ -148,8 +146,8 @@ public class RawResultSet implements ResultSet {
         Object obj = query.data[currentIndex];
         if (obj != null) {
             if (isRecord) {
-                LinkedHashMap<String, T> map = (LinkedHashMap) obj;
-                return map.get(columnLabel);
+                LinkedHashMap<String, Object> map = (LinkedHashMap) obj;
+                return castToType(map.get(columnLabel), tClass);
             } else {
                 throw new IndexOutOfBoundsException("column labels are only allowed in record types");
             }
@@ -158,51 +156,62 @@ public class RawResultSet implements ResultSet {
         }
     }
 
+    private <T> T castToType(Object obj, Class<T> tClass) {
+        try {
+            if (tClass == String.class) {
+                return (T) obj.toString();
+            } else if (tClass == float.class) {
+                // to convert double to float we have to cast it
+                return (T) (Double) obj;
+            } else if (tClass == BigDecimal.class) {
+                return (T) BigDecimal.valueOf((Double) obj);
+            } else {
+                return (T) obj;
+            }
+        } catch (ClassCastException e) {
+            throw new ClassCastException(obj.getClass().getName() + " cannot be converted to " + tClass.getName());
+        }
+
+    }
+
     public String getString(int columnIndex) throws SQLException {
-        Object obj = castColumnToType(columnIndex);
-        return obj.toString();
+        return castFromColIndex(columnIndex, String.class);
     }
 
     public boolean getBoolean(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, boolean.class);
     }
 
     public byte getByte(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, byte.class);
     }
 
     public short getShort(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, short.class);
     }
 
     public int getInt(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, int.class);
     }
 
     public long getLong(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, long.class);
     }
 
     public float getFloat(int columnIndex) throws SQLException {
-        try {
-            double d = castColumnToType(columnIndex);
-            return (float) d;
-        } catch (ClassCastException e) {
-            Object obj = castColumnToType(columnIndex);
-            throw new ClassCastException(obj.getClass().getName() + " cannot be converted to float");
-        }
+        return castFromColIndex(columnIndex, float.class);
     }
 
     public double getDouble(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, double.class);
     }
 
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, BigDecimal.class);
     }
 
     public byte[] getBytes(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, byte[].class);
     }
 
     public Date getDate(int columnIndex) throws SQLException {
@@ -230,53 +239,43 @@ public class RawResultSet implements ResultSet {
     }
 
     public String getString(String columnLabel) throws SQLException {
-        Object obj = castColumnToType(columnLabel);
-        return obj.toString();
+        return castFromColLabel(columnLabel, String.class);
     }
 
     public boolean getBoolean(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, boolean.class);
     }
 
     public byte getByte(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, byte.class);
     }
 
     public short getShort(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, short.class);
     }
 
     public int getInt(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, int.class);
     }
 
     public long getLong(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, long.class);
     }
 
     public float getFloat(String columnLabel) throws SQLException {
-        // In json there is no differentiation between doubles and floats
-        // our jackson parser is returning Doubles all the time so we convert in this particular case
-        try {
-            double d = castColumnToType(columnLabel);
-            return (float) d;
-        } catch (ClassCastException e) {
-            Object obj = castColumnToType(columnLabel);
-            throw new ClassCastException(obj.getClass().getName() + " cannot be converted to float");
-        }
-
+        return castFromColLabel(columnLabel, float.class);
     }
 
     public double getDouble(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, double.class);
     }
 
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, BigDecimal.class);
     }
 
     public byte[] getBytes(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, byte[].class);
     }
 
     public Date getDate(String columnLabel) throws SQLException {
@@ -320,11 +319,11 @@ public class RawResultSet implements ResultSet {
     }
 
     public Object getObject(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, Object.class);
     }
 
     public Object getObject(String columnLabel) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, Object.class);
     }
 
     public int findColumn(String columnLabel) throws SQLException {
@@ -341,23 +340,11 @@ public class RawResultSet implements ResultSet {
     }
 
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        try {
-            Double d = castColumnToType(columnIndex);
-            return BigDecimal.valueOf(d);
-        } catch (ClassCastException e) {
-            Object obj = castColumnToType(columnIndex);
-            throw new ClassCastException(obj.getClass().getName() + "Could not be converted to BigDecimal");
-        }
+        return castFromColIndex(columnIndex, BigDecimal.class);
     }
 
     public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-        try {
-            Double d = castColumnToType(columnLabel);
-            return BigDecimal.valueOf(d);
-        } catch (ClassCastException e) {
-            Object obj = castColumnToType(columnLabel);
-            throw new ClassCastException(obj.getClass().getName() + "Could not be converted to BigDecimal");
-        }
+        return castFromColLabel(columnLabel, BigDecimal.class);
     }
 
     public void beforeFirst() throws SQLException {
@@ -635,7 +622,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public Array getArray(int columnIndex) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, Array.class);
     }
 
     public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
@@ -643,11 +630,11 @@ public class RawResultSet implements ResultSet {
     }
 
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        return castColumnToType(columnIndex);
+        return castFromColIndex(columnIndex, type);
     }
 
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-        return castColumnToType(columnLabel);
+        return castFromColLabel(columnLabel, type);
     }
 
     public <T> T unwrap(Class<T> iface) throws SQLException {
