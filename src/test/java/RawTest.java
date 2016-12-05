@@ -25,7 +25,7 @@ public class RawTest {
             credentials = new PasswordTokenRequest();
             credentials.client_id = "raw-jdbc";
             credentials.grant_type = "password";
-            credentials.username = conf.getProperty("username");
+            credentials.username = conf.getProperty("user");
             credentials.password = conf.getProperty("password");
             authServer = conf.getProperty("auth_server");
             if (authServer == null) {

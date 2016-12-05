@@ -50,7 +50,8 @@ public class RawRestClient {
         HttpResponse response = client.execute(post);
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
-            throw new IOException("HTTP request using clientId, secret for token failed with code " + code);
+            String msg = String.format("Token request failed with code %d, username=%s, password=%s", code, credentials.username, credentials.password );
+            throw new IOException(msg);
         }
 
         String jsonStr = getJsonContent(response);

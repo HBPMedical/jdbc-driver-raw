@@ -1,24 +1,19 @@
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Test;
 import raw.jdbc.RawDriver;
 import raw.jdbc.RawResultSet;
-import raw.jdbc.RawStatement;
 
-import java.lang.reflect.Array;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.*;
 
-public class TestStatement extends RawTest {
+public class TestResultset extends RawTest {
 
 
     Connection conn;
 
-    public TestStatement() throws SQLException {
+    public TestResultset() throws SQLException {
         String url = "jdbc:raw:http://localhost:54321";
         RawDriver driver = new RawDriver();
         conn = driver.connect(url, conf);

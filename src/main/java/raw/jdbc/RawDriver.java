@@ -21,9 +21,23 @@ public class RawDriver implements Driver {
     private static final String GRANT_TYPE = "password";
     private static final String EXEC_PROPERTY = "executor";
     private static final String AUTH_PROPERTY = "auth_url";
-    private static final String USER_PROPERTY = "username";
+    private static final String USER_PROPERTY = "user";
     private static final String PASSWD_PROPERTY = "password";
+
     static Logger logger = Logger.getLogger(RawDriver.class.getName());
+
+    static {
+        register();
+    }
+
+    public static void register() {
+        try {
+            logger.fine("registering RawDriver");
+            DriverManager.registerDriver(new RawDriver());
+        } catch (SQLException e) {
+            throw new RuntimeException("Could not load RawDriver");
+        }
+    }
 
     public Connection connect(String url, Properties info) throws SQLException {
 
@@ -72,11 +86,11 @@ public class RawDriver implements Driver {
                 if (idx > 0) {
                     username = URLDecoder.decode(userinfo.substring(0, idx));
                     String password = URLDecoder.decode(userinfo.substring(idx + 1));
-                    properties.setProperty("password", password);
+                    properties.setProperty(PASSWD_PROPERTY, password);
                 } else {
                     username = uri.getUserInfo();
                 }
-                properties.setProperty("username", username);
+                properties.setProperty(USER_PROPERTY, username);
             }
             return properties;
         } catch (MalformedURLException e) {
