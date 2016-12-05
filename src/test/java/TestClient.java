@@ -1,9 +1,7 @@
 import org.json.simple.parser.ParseException;
-import org.junit.Before;
 import org.junit.Test;
-import raw.jdbc.rawclient.requests.QueryStartResponse;
+import raw.jdbc.rawclient.requests.QueryBlockResponse;
 import raw.jdbc.rawclient.RawRestClient;
-import raw.jdbc.rawclient.requests.PasswordTokenRequest;
 import raw.jdbc.rawclient.requests.TokenResponse;
 
 import java.io.IOException;
@@ -40,7 +38,7 @@ public class TestClient extends RawTest {
 
     @Test
     public void testQueryStart() throws IOException, ParseException {
-        QueryStartResponse resp = client.queryStart("collection(1,2,4)", 100);
+        QueryBlockResponse resp = client.queryStart("collection(1,2,4)", 100);
         logger.fine("execution time: " + resp.executionTime);
     }
 }

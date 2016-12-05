@@ -1,7 +1,8 @@
 package raw.jdbc;
 
+import org.apache.commons.lang3.ArrayUtils;
 import raw.jdbc.rawclient.RawRestClient;
-import raw.jdbc.rawclient.requests.QueryStartResponse;
+import raw.jdbc.rawclient.requests.QueryBlockResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,9 +16,9 @@ import java.util.logging.Logger;
 
 public class RawResultSet implements ResultSet {
     private RawRestClient client;
-    QueryStartResponse query;
+    QueryBlockResponse query;
 
-    private boolean isRecord;
+    private boolean isRecord = false;
     private String[] columnNames;
     private RawStatement statement;
     private int currentRow = -1;
@@ -116,33 +117,33 @@ public class RawResultSet implements ResultSet {
             return null;
         }
         Object obj = query.data[currentIndex];
-        if (obj != null) {
-            if (isRecord) {
-                Map<String, Object> map = (Map) obj;
-                return castToType(map.get(columnNames[columnIndex]), tClass);
-                //TODO: check if this is allowed
-            } else if (obj.getClass().isArray()) {
-                Object[] ary = (Object[]) obj;
-                return castToType(ary[columnIndex], tClass);
-            } else if (obj.getClass() == ArrayList.class) {
-                ArrayList<Object> ary = (ArrayList) obj;
-                return castToType(ary.get(columnIndex), tClass);
-            } else if (columnIndex != 0) {
-                throw new IndexOutOfBoundsException("Row is not record or collection so it has only one column");
-
-            } else {
-                return castToType(obj, tClass);
-            }
-        } else {
+        if (obj == null) {
             return null;
         }
+
+        if (isRecord) {
+            Map<String, Object> map = (Map) obj;
+            return castToType(map.get(columnNames[columnIndex]), tClass);
+            //TODO: check if this is allowed
+        } else if (obj.getClass().isArray()) {
+            Object[] ary = (Object[]) obj;
+            return castToType(ary[columnIndex], tClass);
+        } else if (obj.getClass() == ArrayList.class) {
+            ArrayList<Object> ary = (ArrayList) obj;
+            return castToType(ary.get(columnIndex), tClass);
+        } else if (columnIndex != 0) {
+            throw new IndexOutOfBoundsException("Row is not record or collection to get column index > 0");
+
+        } else {
+            return castToType(obj, tClass);
+        }
+
     }
 
     private <T> T castFromColLabel(String columnLabel, Class<T> tClass) {
         if (currentIndex < 0) {
             return null;
         }
-
         Object obj = query.data[currentIndex];
         if (obj != null) {
             if (isRecord) {
@@ -156,15 +157,51 @@ public class RawResultSet implements ResultSet {
         }
     }
 
+    /**
+     * Casts or transforms the data to array types
+     *
+     * @param obj    The object to cast
+     * @param tClass The desired output class
+     * @param <T>    the desired output class
+     * @return returns the object casted
+     */
+    private <T> T transformArray(ArrayList obj, Class<T> tClass) {
+        if (tClass == String[].class) {
+            return (T) obj.toArray(new String[0]);
+        } else if (tClass == Double[].class) {
+            return (T) obj.toArray(new Double[0]);
+        } else if (tClass == Float[].class) {
+            return (T) obj.toArray(new Float[0]);
+        } else if (tClass == Long[].class) {
+            return (T) obj.toArray(new Long[0]);
+        } else if (tClass == int[].class) {
+            Integer[] l = (Integer[]) obj.toArray(new Integer[0]);
+            return (T) ArrayUtils.toPrimitive(l);
+        } else if (tClass == float[].class) {
+            float[] arr = new float[obj.size()];
+            //For floats we have to copy the full array manually
+            for (int i = 0; i < obj.size(); i++) {
+                arr[i] = new Float((Double) obj.get(i));
+            }
+            return (T) arr;
+        } else if (tClass == double[].class) {
+            Double[] l = (Double[]) obj.toArray(new Double[0]);
+            return (T) ArrayUtils.toPrimitive(l);
+        } else {
+            return (T) obj;
+        }
+    }
+
     private <T> T castToType(Object obj, Class<T> tClass) {
         try {
             if (tClass == String.class) {
                 return (T) obj.toString();
             } else if (tClass == float.class) {
-                // to convert double to float we have to cast it
-                return (T) (Double) obj;
+                return (T) new Float((Double) obj);
             } else if (tClass == BigDecimal.class) {
                 return (T) BigDecimal.valueOf((Double) obj);
+            } else if (tClass.isArray()) {
+                return transformArray((ArrayList) obj, tClass);
             } else {
                 return (T) obj;
             }

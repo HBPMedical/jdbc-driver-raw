@@ -1,7 +1,7 @@
 package raw.jdbc.rawclient.requests;
 
 
-public class QueryStartResponse {
+public class QueryBlockResponse {
     public int executionTime;
     public Object[] data;
     public int size;

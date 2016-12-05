@@ -78,18 +78,18 @@ public class RawRestClient {
         return data.queryId;
     }
 
-    public QueryStartResponse queryStart(String query, int resultsPerPage) throws IOException {
+    public QueryBlockResponse queryStart(String query, int resultsPerPage) throws IOException {
         QueryStartRequest request = new QueryStartRequest();
         request.query = query;
         request.resultsPerPage = resultsPerPage;
-        return doJsonPost("/query-start", request, QueryStartResponse.class);
+        return doJsonPost("/query-start", request, QueryBlockResponse.class);
     }
 
-    public QueryStartResponse queryNext(String queryToken, int resultsPerPage) throws IOException {
+    public QueryBlockResponse queryNext(String queryToken, int resultsPerPage) throws IOException {
         QueryNextRequest request = new QueryNextRequest();
         request.token = queryToken;
         request.resultsPerPage = resultsPerPage;
-        return doJsonPost("/query-next", request, QueryStartResponse.class);
+        return doJsonPost("/query-next", request, QueryBlockResponse.class);
     }
 
     public void queryClose(String token) throws IOException {

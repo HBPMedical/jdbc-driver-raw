@@ -1,10 +1,7 @@
 package raw.jdbc;
 
 import raw.jdbc.rawclient.RawRestClient;
-import raw.jdbc.rawclient.requests.QueryStartResponse;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.IOException;
 import java.sql.*;
 
 public class RawStatement implements Statement {
