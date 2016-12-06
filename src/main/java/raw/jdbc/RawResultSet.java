@@ -1,6 +1,7 @@
 package raw.jdbc;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
 import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.QueryBlockResponse;
 
@@ -44,7 +45,7 @@ public class RawResultSet implements ResultSet {
                     this.isRecord = true;
                     Map<String, Object> map = (Map) obj;
                     columnNames = map.keySet().toArray(new String[]{});
-                } {
+                } else {
                     this.isRecord = false;
                     columnNames = new String[]{"0"};
                 }
@@ -113,10 +114,11 @@ public class RawResultSet implements ResultSet {
         return false;
     }
 
-    private <T> T castFromColIndex(int columnIndex, Class<T> tClass) {
-        if (currentIndex < 0) {
-            return null;
+    private <T> T castFromColIndex(int columnIndex, Class<T> tClass) throws SQLException {
+        if (currentIndex == -1) {
+            next();
         }
+
         Object obj = query.data[currentIndex];
         if (obj == null) {
             return null;
@@ -664,7 +666,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getObject");
     }
 
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
@@ -728,7 +730,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public URL getURL(String columnLabel) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getURL");
     }
 
     public void updateRef(int columnIndex, Ref x) throws SQLException {
