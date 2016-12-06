@@ -20,6 +20,7 @@ public class RawResultSet implements ResultSet {
 
     private boolean isRecord = false;
     private String[] columnNames;
+
     private RawStatement statement;
     private int currentRow = -1;
     private int currentIndex = -1;
@@ -43,15 +44,15 @@ public class RawResultSet implements ResultSet {
                     this.isRecord = true;
                     Map<String, Object> map = (Map) obj;
                     columnNames = map.keySet().toArray(new String[]{});
-                } else {
+                } {
                     this.isRecord = false;
+                    columnNames = new String[]{"0"};
                 }
             }
             logger.fine("initialized query token: " + query.token + " hasMore: " + query.hasMore);
         } catch (IOException e) {
             throw new SQLException("could not start query: " + e.getMessage());
         }
-
     }
 
     public boolean isBeforeFirst() throws SQLException {
@@ -352,7 +353,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public ResultSetMetaData getMetaData() throws SQLException {
-        throw new UnsupportedOperationException("Not implemented getMetaData");
+        return new RawResultSetMetaData(query.data);
     }
 
     public Object getObject(int columnIndex) throws SQLException {
