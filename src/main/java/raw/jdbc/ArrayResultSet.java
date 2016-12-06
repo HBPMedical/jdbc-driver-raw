@@ -1,6 +1,7 @@
 package raw.jdbc;
 
 import java.io.InputStream;
+import java.io.ObjectInput;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -11,7 +12,7 @@ import java.util.Map;
 /**
  * ResultSet that gets the dat from a double dimension array
  */
-public class ArrayResultSet implements ResultSet{
+public class ArrayResultSet implements ResultSet {
     Object[][] data;
     Map<String, Integer> names;
 
@@ -22,18 +23,21 @@ public class ArrayResultSet implements ResultSet{
         this.data = data;
     }
 
-    private <T> T getType(int columnIndex) {
+    private <T> T getType(int columnIndex) throws SQLException {
+        if (index == -1) {
+            next();
+        }
         return (T) data[index][columnIndex];
     }
 
-    private <T> T getType(String columnLabel) {
+    private <T> T getType(String columnLabel) throws SQLException {
         int idx = names.get(columnLabel);
         return getType(idx);
     }
 
     public boolean next() throws SQLException {
-        index ++;
-        return index >= data.length;
+        index++;
+        return index <= data.length;
     }
 
     public void close() throws SQLException {
@@ -485,7 +489,8 @@ public class ArrayResultSet implements ResultSet{
     }
 
     public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-        return null;
+        Map obj = getType(columnIndex);
+        return (Object) obj;
     }
 
     public Ref getRef(int columnIndex) throws SQLException {
@@ -505,7 +510,8 @@ public class ArrayResultSet implements ResultSet{
     }
 
     public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
-        return null;
+        Map obj = getType(columnLabel);
+        return (Object) obj;
     }
 
     public Ref getRef(String columnLabel) throws SQLException {
@@ -653,7 +659,7 @@ public class ArrayResultSet implements ResultSet{
     }
 
     public String getNString(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getNString");
     }
 
     public String getNString(String columnLabel) throws SQLException {

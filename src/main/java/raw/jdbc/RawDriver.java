@@ -150,6 +150,6 @@ public class RawDriver implements Driver {
     }
 
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        return null;
+        return logger.getParent();
     }
 }
