@@ -16,13 +16,13 @@ import java.util.logging.Logger;
 
 public class RawDriver implements Driver {
 
-    private static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
-    private static final String JDBC_CLIENT_ID = "raw-jdbc";
-    private static final String GRANT_TYPE = "password";
-    private static final String EXEC_PROPERTY = "executor";
-    private static final String AUTH_PROPERTY = "auth_url";
-    private static final String USER_PROPERTY = "user";
-    private static final String PASSWD_PROPERTY = "password";
+    static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
+    static final String JDBC_CLIENT_ID = "raw-jdbc";
+    static final String GRANT_TYPE = "password";
+    static final String EXEC_PROPERTY = "executor";
+    static final String AUTH_PROPERTY = "auth_url";
+    static final String USER_PROPERTY = "user";
+    static final String PASSWD_PROPERTY = "password";
 
     static Logger logger = Logger.getLogger(RawDriver.class.getName());
 
@@ -42,21 +42,7 @@ public class RawDriver implements Driver {
     public Connection connect(String url, Properties info) throws SQLException {
 
         Properties props = parseProperties(url, info);
-        PasswordTokenRequest credentials = new PasswordTokenRequest();
-        credentials.client_id = JDBC_CLIENT_ID;
-        credentials.client_secret = null;
-        credentials.grant_type = GRANT_TYPE;
-        credentials.username = props.getProperty(USER_PROPERTY);
-        credentials.password = props.getProperty(PASSWD_PROPERTY);
-
-        String authUrl = props.getProperty(AUTH_PROPERTY);
-        String executer = props.getProperty(EXEC_PROPERTY);
-        try {
-            TokenResponse token = RawRestClient.getPasswdGrantToken(authUrl, credentials);
-            return new RawConnection(executer, authUrl, token);
-        } catch (IOException e) {
-            throw new SQLException("Unable to get bearer token for jdbc connection: " + e.getMessage());
-        }
+        return new RawConnection(url, props);
     }
 
     public static Properties parseUrl(String url) throws SQLException {

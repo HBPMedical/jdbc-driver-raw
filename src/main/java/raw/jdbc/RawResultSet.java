@@ -316,43 +316,43 @@ public class RawResultSet implements ResultSet {
     }
 
     public Date getDate(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getDate");
     }
 
     public Time getTime(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getTime");
     }
 
     public Timestamp getTimestamp(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getTimestamp");
     }
 
     public InputStream getAsciiStream(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getAsciiStream");
     }
 
     public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getUnicodeStream");
     }
 
     public InputStream getBinaryStream(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getBinaryStream");
     }
 
     public SQLWarning getWarnings() throws SQLException {
-        throw new UnsupportedOperationException("Not supported");
+        throw new UnsupportedOperationException("Not supported getWarnings");
     }
 
     public void clearWarnings() throws SQLException {
-        throw new UnsupportedOperationException("Not supported");
+        throw new UnsupportedOperationException("Not supported clearWarnings");
     }
 
     public String getCursorName() throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getCursorName");
     }
 
     public ResultSetMetaData getMetaData() throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getMetaData");
     }
 
     public Object getObject(int columnIndex) throws SQLException {
@@ -369,11 +369,11 @@ public class RawResultSet implements ResultSet {
     }
 
     public Reader getCharacterStream(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getCharacterStream");
     }
 
     public Reader getCharacterStream(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getCharacterStream");
     }
 
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
@@ -385,19 +385,19 @@ public class RawResultSet implements ResultSet {
     }
 
     public void beforeFirst() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation beforeFirst");
     }
 
     public void afterLast() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation afterLast");
     }
 
     public boolean first() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation first");
     }
 
     public boolean last() throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented last");
     }
 
     public int getRow() throws SQLException {
@@ -405,11 +405,11 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean absolute(int row) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation absolute");
     }
 
     public boolean relative(int rows) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation relative");
     }
 
     public boolean previous() throws SQLException {
@@ -431,211 +431,211 @@ public class RawResultSet implements ResultSet {
     }
 
     public void setFetchDirection(int direction) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation setFetchDirection");
     }
 
     public int getFetchDirection() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation getFetchDirection");
     }
 
     public int getType() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation getType");
     }
 
     public int getConcurrency() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation getConcurrency");
     }
 
     public boolean rowUpdated() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation rowUpdated");
     }
 
     public boolean rowInserted() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation rowInserted");
     }
 
     public boolean rowDeleted() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation rowDeleted");
     }
 
     public void updateNull(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNull");
     }
 
     public void updateBoolean(int columnIndex, boolean x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBoolean");
     }
 
     public void updateByte(int columnIndex, byte x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateByte");
     }
 
     public void updateShort(int columnIndex, short x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateShort");
     }
 
     public void updateInt(int columnIndex, int x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateInt");
     }
 
     public void updateLong(int columnIndex, long x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateLong");
     }
 
     public void updateFloat(int columnIndex, float x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateFloat");
     }
 
     public void updateDouble(int columnIndex, double x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateDouble");
     }
 
     public void updateBigDecimal(int columnIndex, BigDecimal x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBigDecimal");
     }
 
     public void updateString(int columnIndex, String x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateString");
     }
 
     public void updateBytes(int columnIndex, byte[] x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBytes");
     }
 
     public void updateDate(int columnIndex, Date x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateDate");
     }
 
     public void updateTime(int columnIndex, Time x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateTime");
     }
 
     public void updateTimestamp(int columnIndex, Timestamp x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateTimestamp");
     }
 
     public void updateAsciiStream(int columnIndex, InputStream x, int length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateAsciiStream");
     }
 
     public void updateBinaryStream(int columnIndex, InputStream x, int length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBinaryStream");
     }
 
     public void updateCharacterStream(int columnIndex, Reader x, int length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateCharacterStream");
     }
 
     public void updateObject(int columnIndex, Object x, int scaleOrLength) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateObject");
     }
 
     public void updateObject(int columnIndex, Object x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateObject");
     }
 
     public void updateNull(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNull");
     }
 
     public void updateBoolean(String columnLabel, boolean x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBoolean");
     }
 
     public void updateByte(String columnLabel, byte x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateByte");
     }
 
     public void updateShort(String columnLabel, short x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateShort");
     }
 
     public void updateInt(String columnLabel, int x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateInt");
     }
 
     public void updateLong(String columnLabel, long x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateLong");
     }
 
     public void updateFloat(String columnLabel, float x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateFloat");
     }
 
     public void updateDouble(String columnLabel, double x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateDouble");
     }
 
     public void updateBigDecimal(String columnLabel, BigDecimal x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBigDecimal");
     }
 
     public void updateString(String columnLabel, String x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateString");
     }
 
     public void updateBytes(String columnLabel, byte[] x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBytes");
     }
 
     public void updateDate(String columnLabel, Date x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateDate");
     }
 
     public void updateTime(String columnLabel, Time x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateTime");
     }
 
     public void updateTimestamp(String columnLabel, Timestamp x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateTimestamp");
     }
 
     public void updateAsciiStream(String columnLabel, InputStream x, int length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateAsciiStream");
     }
 
     public void updateBinaryStream(String columnLabel, InputStream x, int length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBinaryStream");
     }
 
     public void updateCharacterStream(String columnLabel, Reader reader, int length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateCharacterStream");
     }
 
     public void updateObject(String columnLabel, Object x, int scaleOrLength) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateObject");
     }
 
     public void updateObject(String columnLabel, Object x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateObject");
     }
 
     public void insertRow() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation insertRow");
     }
 
     public void updateRow() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateRow");
     }
 
     public void deleteRow() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation deleteRow");
     }
 
     public void refreshRow() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation refreshRow");
     }
 
     public void cancelRowUpdates() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation cancelRowUpdates");
     }
 
     public void moveToInsertRow() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation moveToInsertRow");
     }
 
     public void moveToCurrentRow() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation moveToCurrentRow");
     }
 
     public Statement getStatement() throws SQLException {
@@ -643,19 +643,19 @@ public class RawResultSet implements ResultSet {
     }
 
     public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getObject");
     }
 
     public Ref getRef(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getRef");
     }
 
     public Blob getBlob(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported");
+        throw new UnsupportedOperationException("Not supported getBlob");
     }
 
     public Clob getClob(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not supported");
+        throw new UnsupportedOperationException("Not supported getClob");
     }
 
     public Array getArray(int columnIndex) throws SQLException {
@@ -679,51 +679,51 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented isWrapperFor");
     }
 
     public Ref getRef(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getRef");
     }
 
     public Blob getBlob(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getBlob");
     }
 
     public Clob getClob(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getClob");
     }
 
     public Array getArray(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getArray");
     }
 
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getDate");
     }
 
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getDate");
     }
 
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getTime");
     }
 
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getTime");
     }
 
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getTimestamp");
     }
 
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getTimestamp");
     }
 
     public URL getURL(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getURL");
     }
 
     public URL getURL(String columnLabel) throws SQLException {
@@ -731,55 +731,55 @@ public class RawResultSet implements ResultSet {
     }
 
     public void updateRef(int columnIndex, Ref x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateRef");
     }
 
     public void updateRef(String columnLabel, Ref x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateRef");
     }
 
     public void updateBlob(int columnIndex, Blob x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBlob");
     }
 
     public void updateBlob(String columnLabel, Blob x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBlob");
     }
 
     public void updateClob(int columnIndex, Clob x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateClob");
     }
 
     public void updateClob(String columnLabel, Clob x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateClob");
     }
 
     public void updateArray(int columnIndex, Array x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateArray");
     }
 
     public void updateArray(String columnLabel, Array x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateArray");
     }
 
     public RowId getRowId(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getRowId");
     }
 
     public RowId getRowId(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getRowId");
     }
 
     public void updateRowId(int columnIndex, RowId x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateRowId");
     }
 
     public void updateRowId(String columnLabel, RowId x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateRowId");
     }
 
     public int getHoldability() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation getHoldability");
     }
 
     public boolean isClosed() throws SQLException {
@@ -787,170 +787,170 @@ public class RawResultSet implements ResultSet {
     }
 
     public void updateNString(int columnIndex, String nString) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNString");
     }
 
     public void updateNString(String columnLabel, String nString) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNString");
     }
 
     public void updateNClob(int columnIndex, NClob nClob) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNClob");
     }
 
     public void updateNClob(String columnLabel, NClob nClob) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNClob");
     }
 
     public NClob getNClob(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation getNClob");
     }
 
     public NClob getNClob(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation getNClob");
     }
 
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getSQLXML");
     }
 
     public SQLXML getSQLXML(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getSQLXML");
     }
 
     public void updateSQLXML(int columnIndex, SQLXML xmlObject) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateSQLXML");
     }
 
     public void updateSQLXML(String columnLabel, SQLXML xmlObject) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateSQLXML");
     }
 
     public String getNString(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getNString");
     }
 
     public String getNString(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getNString");
     }
 
     public Reader getNCharacterStream(int columnIndex) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getNCharacterStream");
     }
 
     public Reader getNCharacterStream(String columnLabel) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented");
+        throw new UnsupportedOperationException("Not implemented getNCharacterStream");
     }
 
     public void updateNCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNCharacterStream");
     }
 
     public void updateNCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNCharacterStream");
     }
 
     public void updateAsciiStream(int columnIndex, InputStream x, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateAsciiStream");
     }
 
     public void updateBinaryStream(int columnIndex, InputStream x, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBinaryStream");
     }
 
     public void updateCharacterStream(int columnIndex, Reader x, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateCharacterStream");
     }
 
     public void updateAsciiStream(String columnLabel, InputStream x, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateAsciiStream");
     }
 
     public void updateBinaryStream(String columnLabel, InputStream x, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBinaryStream");
     }
 
     public void updateCharacterStream(String columnLabel, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateCharacterStream");
     }
 
     public void updateBlob(int columnIndex, InputStream inputStream, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBlob");
     }
 
     public void updateBlob(String columnLabel, InputStream inputStream, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBlob");
     }
 
     public void updateClob(int columnIndex, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateClob");
     }
 
     public void updateClob(String columnLabel, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateClob");
     }
 
     public void updateNClob(int columnIndex, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNClob");
     }
 
     public void updateNClob(String columnLabel, Reader reader, long length) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNClob");
     }
 
     public void updateNCharacterStream(int columnIndex, Reader x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNCharacterStream");
     }
 
     public void updateNCharacterStream(String columnLabel, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNCharacterStream");
     }
 
     public void updateAsciiStream(int columnIndex, InputStream x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateAsciiStream");
     }
 
     public void updateBinaryStream(int columnIndex, InputStream x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBinaryStream");
     }
 
     public void updateCharacterStream(int columnIndex, Reader x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateCharacterStream");
     }
 
     public void updateAsciiStream(String columnLabel, InputStream x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateAsciiStream");
     }
 
     public void updateBinaryStream(String columnLabel, InputStream x) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBinaryStream");
     }
 
     public void updateCharacterStream(String columnLabel, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateCharacterStream");
     }
 
     public void updateBlob(int columnIndex, InputStream inputStream) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBlob");
     }
 
     public void updateBlob(String columnLabel, InputStream inputStream) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateBlob");
     }
 
     public void updateClob(int columnIndex, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateClob");
     }
 
     public void updateClob(String columnLabel, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateClob");
     }
 
     public void updateNClob(int columnIndex, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNClob");
     }
 
     public void updateNClob(String columnLabel, Reader reader) throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation");
+        throw new UnsupportedOperationException("Unsupported operation updateNClob");
     }
 }
