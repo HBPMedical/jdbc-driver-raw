@@ -68,23 +68,23 @@ public class RawConnection implements Connection {
     }
 
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        throw new UnsupportedOperationException("not implemented setAutoCommit");
+
     }
 
     public boolean getAutoCommit() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getAutoCommit");
+        return false;
     }
 
     public void commit() throws SQLException {
-        throw new UnsupportedOperationException("not implemented commit");
+
     }
 
     public void rollback() throws SQLException {
-        throw new UnsupportedOperationException("not implemented rollback");
+
     }
 
     public void close() throws SQLException {
-        throw new UnsupportedOperationException("not implemented close");
+
     }
 
     public boolean isClosed() throws SQLException {
@@ -93,7 +93,7 @@ public class RawConnection implements Connection {
 
     public DatabaseMetaData getMetaData() throws SQLException {
         String user = this.properties.getProperty(RawDriver.USER_PROPERTY);
-        return new RawDatabaseMetaData(url, user);
+        return new RawDatabaseMetaData(url, user, client);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
@@ -213,7 +213,8 @@ public class RawConnection implements Connection {
 
     @SuppressWarnings("Since15")
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
-        throw new UnsupportedOperationException("not implemented setClientInfo");
+        throw new UnsupportedOperationException("not implemented setClientInfo " +
+        "name: "+ name + " value: " + value);
     }
 
     @SuppressWarnings("Since15")

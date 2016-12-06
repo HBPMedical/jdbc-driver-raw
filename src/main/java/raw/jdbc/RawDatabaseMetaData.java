@@ -3,6 +3,8 @@ package raw.jdbc;
 import raw.jdbc.rawclient.RawRestClient;
 
 import java.sql.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class RawDatabaseMetaData implements DatabaseMetaData {
@@ -383,63 +385,77 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public int getMaxBinaryLiteralLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxBinaryLiteralLength");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxCharLiteralLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxCharLiteralLength");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxColumnNameLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxColumnNameLength");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxColumnsInGroupBy() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxColumnsInGroupBy");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxColumnsInIndex() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxColumnsInIndex");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxColumnsInOrderBy() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxColumnsInOrderBy");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxColumnsInSelect() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxColumnsInSelect");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxColumnsInTable() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxColumnsInTable");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxConnections() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxConnections");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxCursorNameLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxCursorNameLength");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxIndexLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxIndexLength");
+        return 0x7FFFFFFF;
     }
 
     public int getMaxSchemaNameLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxSchemaNameLength");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxProcedureNameLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxProcedureNameLength");
+        //TODO: Check the correct value to return
+        return 100000;
     }
 
     public int getMaxCatalogNameLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxCatalogNameLength");
+        //TODO: Check the correct value to return
+        return 1000000;
     }
 
     public int getMaxRowSize() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxRowSize");
+        //TODO: Check the correct value to return
+        return 1000000;
     }
 
     public boolean doesMaxRowSizeIncludeBlobs() throws SQLException {
@@ -447,19 +463,23 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public int getMaxStatementLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxStatementLength");
+        //TODO: Check the correct value to return
+        return 1000000;
     }
 
     public int getMaxStatements() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxStatements");
+        //TODO: Check the correct value to return
+        return 1000;
     }
 
     public int getMaxTableNameLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxTableNameLength");
+        //TODO: Check the correct value to return
+        return 1000;
     }
 
     public int getMaxTablesInSelect() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxTablesInSelect");
+        //TODO: Check the correct value to return
+        return 1000;
     }
 
     public int getMaxUserNameLength() throws SQLException {
@@ -467,7 +487,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public int getDefaultTransactionIsolation() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getDefaultTransactionIsolation");
+        //TODO: Check the correct value to return
+        return 0;
     }
 
     public boolean supportsTransactions() throws SQLException {
@@ -515,7 +536,11 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getTableTypes() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getTableTypes");
+
+        String[][] tables = new String[][]{{"TABLE"}, {"VIEW"}};
+        Map<String, Integer> names = new LinkedHashMap<String, Integer>();
+        names.put("table_type", 0);
+        return new ArrayResultSet(tables, names);
     }
 
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
