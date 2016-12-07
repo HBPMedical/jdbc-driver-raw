@@ -1,7 +1,6 @@
 package raw.jdbc;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ObjectUtils;
 import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.QueryBlockResponse;
 
@@ -359,7 +358,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public ResultSetMetaData getMetaData() throws SQLException {
-        return new RawResultSetMetaData(query.data);
+        return new RawRsMetadata(query.data);
     }
 
     public Object getObject(int columnIndex) throws SQLException {

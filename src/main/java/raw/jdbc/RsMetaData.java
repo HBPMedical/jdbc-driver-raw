@@ -4,37 +4,26 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-public class RawResultSetMetaData implements ResultSetMetaData {
+public class RsMetaData implements ResultSetMetaData {
 
-    String[] columnNames;
-    int[] types;
-    static Logger logger = Logger.getLogger(RawResultSetMetaData.class.getName());
+    protected String[] columnNames;
+    protected int[] types;
+    static Logger logger = Logger.getLogger(RsMetaData.class.getName());
 
-    RawResultSetMetaData(Object[] data) throws SQLException {
-        if (data.length > 0) {
+    RsMetaData(String[] names, int[] types) throws SQLException {
+        this.columnNames = names;
+        this.types = types;
 
-            Object obj = data[0];
-            if (obj.getClass() == LinkedHashMap.class) {
-                Map<String, Object> map = (Map) obj;
-                columnNames = map.keySet().toArray(new String[]{});
-                types = new int[columnNames.length];
-                for (int i = 0; i < columnNames.length; i++) {
-                    types[i] = objToType(map.get(columnNames[i]));
-                }
-            } else {
-                columnNames = new String[]{RawResultSet.SINGLE_ELEM_LABEL};
-                types = new int[]{objToType(obj)};
-            }
-        }
     }
 
-    static private int objToType(Object obj) throws SQLException {
-        if (obj.getClass() == Integer.class) {
+    static public int objToType(Object obj) throws SQLException {
+        if (obj == null){
+            return Types.NULL;
+        }else if (obj.getClass() == Integer.class) {
             return Types.INTEGER;
         } else if (obj.getClass() == Long.class) {
             return Types.BIGINT;
@@ -42,6 +31,8 @@ public class RawResultSetMetaData implements ResultSetMetaData {
             return Types.VARCHAR;
         } else if (obj.getClass() == Double.class) {
             return Types.DOUBLE;
+        } else if (obj.getClass() == Boolean.class) {
+            return Types.BOOLEAN;
         } else if (obj.getClass() == LinkedHashMap.class) {
             return Types.STRUCT;
         } else if (obj.getClass() == ArrayList.class) {
@@ -66,6 +57,8 @@ public class RawResultSetMetaData implements ResultSetMetaData {
                 return "record";
             case Types.ARRAY:
                 return "collection";
+            case Types.BOOLEAN:
+                return "boolean";
             default:
                 return "unknow type";
         }

@@ -13,11 +13,13 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     String url;
     String user;
     RawRestClient client;
+    Connection connecion;
 
-    RawDatabaseMetaData(String url, String user, RawRestClient client) {
+    RawDatabaseMetaData(String url, String user, RawRestClient client, Connection connecion) {
         this.url = url;
         this.user = user;
         this.client = client;
+        this.connecion = connecion;
     }
 
     public boolean allProceduresAreCallable() throws SQLException {
@@ -254,27 +256,27 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public boolean supportsOuterJoins() throws SQLException {
-        throw new UnsupportedOperationException("not implemented supportsOuterJoins");
+        return true;
     }
 
     public boolean supportsFullOuterJoins() throws SQLException {
-        throw new UnsupportedOperationException("not implemented supportsFullOuterJoins");
+        return true;
     }
 
     public boolean supportsLimitedOuterJoins() throws SQLException {
-        throw new UnsupportedOperationException("not implemented supportsLimitedOuterJoins");
+        return true;
     }
 
     public String getSchemaTerm() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getSchemaTerm");
+        return "schema";
     }
 
     public String getProcedureTerm() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getProcedureTerm");
+        return "procedure";
     }
 
     public String getCatalogTerm() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getCatalogTerm");
+        return "catalog";
     }
 
     public boolean isCatalogAtStart() throws SQLException {
@@ -484,7 +486,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public int getMaxUserNameLength() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getMaxUserNameLength");
+        //TODO: Check the correct value to return
+        return 1000000;
     }
 
     public int getDefaultTransactionIsolation() throws SQLException {
@@ -517,87 +520,143 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getProcedures");
+        return new ArrayResultSet(new Object[][]{}, new String[]{});
     }
 
     public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getProcedureColumns");
+        throw new SQLFeatureNotSupportedException("not implemented getProcedureColumns");
     }
 
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getTables");
+        //TODO: Make the search work, check the difference for us between schema and table
+        String[] schemas = requestSchemas();
+        String[] columnNames = new String[]{
+                "TABLE_CAT",
+                "TABLE_SCHEM",
+                "TABLE_TYPE",
+                "REMARKS",
+                "TYPE_CAT",
+                "TYPE_SCHEM",
+                "TYPE_NAME",
+                "SELF_REFERENCING_COL_NAME",
+                "REF_GENERATION"
+        };
+
+        String[][] data = new String[schemas.length][];
+        for (int i = 0; i < schemas.length; i++) {
+            data[i] = new String[]{
+                    user, schemas[i], schemas[i], "TABLE", "user table",
+                    null, null, null, null, null};
+        }
+        return new ArrayResultSet(data, columnNames);
     }
 
-    public ResultSet getSchemas() throws SQLException {
+    String[] requestSchemas() throws SQLException {
         try {
-            String[] schemas = client.getSchemas();
-            String[][] rsSchemas = new String[schemas.length][];
-            for (int i = 0; i < schemas.length; i++) {
-                rsSchemas[i] = new String[]{schemas[i], user};
-            }
-            Map<String, Integer> columnNames = new LinkedHashMap<String, Integer>();
-            columnNames.put("TABLE_SCHEM", 1);
-            columnNames.put("TABLE_CATALOG", 2);
-            return new ArrayResultSet(rsSchemas, columnNames);
+            return client.getSchemas();
         } catch (IOException e) {
             throw new SQLException("Could not list schemas: " + e.getMessage());
         }
     }
 
+    public ResultSet getSchemas() throws SQLException {
+
+        String[] schemas = requestSchemas();
+        String[][] rsSchemas = new String[schemas.length][];
+        for (int i = 0; i < schemas.length; i++) {
+            rsSchemas[i] = new String[]{schemas[i], user};
+        }
+        String[] columnNames = new String[]{"TABLE_SCHEM", "TABLE_CATALOG"};
+        return new ArrayResultSet(rsSchemas, columnNames);
+
+    }
+
     public ResultSet getCatalogs() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getCatalogs");
+        String[][] data = new String[][]{{user}};
+        return new ArrayResultSet(data, new String[]{"TABLE_CAT"});
     }
 
     public ResultSet getTableTypes() throws SQLException {
-
         String[][] tables = new String[][]{{"TABLE"}, {"VIEW"}};
-        Map<String, Integer> names = new LinkedHashMap<String, Integer>();
-        names.put("table_type", 1);
-        return new ArrayResultSet(tables, names);
+        return new ArrayResultSet(tables, new String[]{"table_type"});
     }
 
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getColumns");
+        //TODO: implement this
+        Object[][] data = new Object[][]{};
+        String[] fields = new String[]{};
+        return new ArrayResultSet(data, fields);
     }
 
     public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getColumnPrivileges");
+        //TODO: implement this
+        Object[][] data = new Object[][]{};
+        String[] fields = new String[]{};
+        return new ArrayResultSet(data, fields);
     }
 
     public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getTablePrivileges");
+        throw new SQLFeatureNotSupportedException("not implemented getTablePrivileges");
     }
 
     public ResultSet getBestRowIdentifier(String catalog, String schema, String table, int scope, boolean nullable) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getBestRowIdentifier");
+        throw new SQLFeatureNotSupportedException("not implemented getBestRowIdentifier");
     }
 
     public ResultSet getVersionColumns(String catalog, String schema, String table) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getVersionColumns");
+        throw new SQLFeatureNotSupportedException("not implemented getVersionColumns");
     }
 
     public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getPrimaryKeys");
+        throw new SQLFeatureNotSupportedException("not implemented getPrimaryKeys");
     }
 
     public ResultSet getImportedKeys(String catalog, String schema, String table) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getImportedKeys");
+        throw new SQLFeatureNotSupportedException("not implemented getImportedKeys");
     }
 
     public ResultSet getExportedKeys(String catalog, String schema, String table) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getExportedKeys");
+        throw new SQLFeatureNotSupportedException("not implemented getExportedKeys");
     }
 
     public ResultSet getCrossReference(String parentCatalog, String parentSchema, String parentTable, String foreignCatalog, String foreignSchema, String foreignTable) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getCrossReference");
+        throw new SQLFeatureNotSupportedException("not implemented getCrossReference");
     }
 
     public ResultSet getTypeInfo() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getTypeInfo");
+        String[] fields = new String[]{
+                "TYPE_NAME",
+                "DATA_TYPE",
+                "PRECISION",
+                "LITERAL_PREFIX",
+                "LITERAL_SUFFIX",
+                "CREATE_PARAMS",
+                "NULLABLE",
+                "CASE_SENSITIVE",
+                "SEARCHABLE",
+                "UNSIGNED_ATTRIBUTE",
+                "FIXED_PREC_SCALE",
+                "AUTO_INCREMENT",
+                "LOCAL_TYPE_NAME",
+                "MINIMUM_SCALE",
+                "MAXIMUM_SCALE",
+                "SQL_DATA_TYPE",
+                "SQL_DATETIME_SUB",
+                "NUM_PREC_RADIX"
+        };
+        Object[][] data = new Object[][]{
+                {"int", Types.INTEGER, 0Xffffffff, null, null, null, typeNullable, true, typeSearchable, false, false, false, "int", 0, 0, Types.INTEGER, 0, 10},
+                {"string", Types.VARCHAR, 0Xffffffff, null, null, null, typeNullable, true, typeSearchable, false, false, false, "string", 0, 0, Types.VARCHAR, 0, 10},
+                {"long", Types.BIGINT, 0Xffffffff, null, null, null, typeNullable, true, typeSearchable, false, false, false, "long", 0, 0, 0, Types.BIGINT, 10},
+                {"double", Types.DOUBLE, 0Xffffffff, null, null, null, typeNullable, true, typeSearchable, false, false, false, "double", 0, 0, Types.DOUBLE, 0, 10},
+                {"collection", Types.ARRAY, 0Xffffffff, null, null, null, typeNullable, true, typeSearchable, false, false, false, "collection", 0, 0, Types.ARRAY, 0, 10},
+                {"record", Types.STRUCT, 0Xffffffff, null, null, null, typeNullable, true, typeSearchable, false, false, false, "record", 0, 0, Types.STRUCT, 0, 10},
+        };
+        return new ArrayResultSet(data, fields);
     }
 
     public ResultSet getIndexInfo(String catalog, String schema, String table, boolean unique, boolean approximate) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getIndexInfo");
+        throw new SQLFeatureNotSupportedException("not implemented getIndexInfo");
     }
 
     public boolean supportsResultSetType(int type) throws SQLException {

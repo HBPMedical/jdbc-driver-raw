@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -18,27 +19,29 @@ public class ArrayResultSet implements ResultSet {
 
     int index = -1;
 
-    ArrayResultSet(Object[][] data, Map<String, Integer> columnNames) {
-        this.names = columnNames;
+    ArrayResultSet(Object[][] data, String columnNames[]) {
+        this.names = new LinkedHashMap<String, Integer>();
+        for (int i = 0; i < columnNames.length; i++) {
+            this.names.put(columnNames[i], i);
+        }
         this.data = data;
     }
 
     private <T> T getType(int columnIndex) throws SQLException {
-        System.out.println("index: " + index + "col: " + columnIndex);
         if (index == -1) {
             next();
         }
-        return (T) data[index][columnIndex-1];
+        return (T) data[index][columnIndex - 1];
     }
 
     private <T> T getType(String columnLabel) throws SQLException {
-        int idx = names.get(columnLabel)-1;
+        int idx = names.get(columnLabel);
         return getType(idx);
     }
 
     public boolean next() throws SQLException {
         index++;
-        return index <= data.length -1;
+        return index <= data.length - 1;
     }
 
     public void close() throws SQLException {
@@ -190,7 +193,8 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public ResultSetMetaData getMetaData() throws SQLException {
-        return null;
+        String[] names = this.names.keySet().toArray(new String[]{});
+        return new ArrayRsMetada(this.data, names);
     }
 
     public Object getObject(int columnIndex) throws SQLException {

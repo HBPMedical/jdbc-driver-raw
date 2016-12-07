@@ -1,10 +1,7 @@
 package raw.jdbc;
 
-import raw.jdbc.rawclient.requests.PasswordTokenRequest;
-import raw.jdbc.rawclient.requests.TokenResponse;
 import raw.jdbc.rawclient.RawRestClient;
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
@@ -12,15 +9,13 @@ import java.util.concurrent.Executor;
 
 public class RawConnection implements Connection {
     private RawRestClient client;
-    private Properties properties = new Properties();
     private String url;
-    private String user;
+    private String username;
 
     RawConnection(String url, RawRestClient client, String user) throws SQLException {
         this.url = url;
         this.client = client;
-        this.user = user;
-
+        this.username = user;
     }
 
     public Statement createStatement() throws SQLException {
@@ -76,11 +71,11 @@ public class RawConnection implements Connection {
     }
 
     public DatabaseMetaData getMetaData() throws SQLException {
-        return new RawDatabaseMetaData(url, user, client);
+        return new RawDatabaseMetaData(url, username, client, this);
     }
 
     public void setReadOnly(boolean readOnly) throws SQLException {
-        throw new UnsupportedOperationException("not implemented setReadOnly");
+        throw new SQLFeatureNotSupportedException("not implemented setReadOnly");
     }
 
     public boolean isReadOnly() throws SQLException {
@@ -88,7 +83,7 @@ public class RawConnection implements Connection {
     }
 
     public void setCatalog(String catalog) throws SQLException {
-        throw new UnsupportedOperationException("not implemented setCatalog");
+        throw new SQLFeatureNotSupportedException("not implemented setCatalog");
     }
 
     public String getCatalog() throws SQLException {
@@ -201,15 +196,15 @@ public class RawConnection implements Connection {
     }
 
     public String getClientInfo(String name) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getClientInfo");
+        throw new SQLFeatureNotSupportedException("not implemented getClientInfo");
     }
 
     public Properties getClientInfo() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getClientInfo");
+        throw new SQLFeatureNotSupportedException("not implemented getClientInfo");
     }
 
     public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-        throw new UnsupportedOperationException("not implemented createArrayOf");
+        throw new SQLFeatureNotSupportedException("not implemented createArrayOf");
     }
 
     public Struct createStruct(String typeName, Object[] attributes) throws SQLException {

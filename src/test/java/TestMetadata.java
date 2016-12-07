@@ -1,11 +1,9 @@
 import org.junit.Test;
+import raw.jdbc.RawDatabaseMetaData;
 import raw.jdbc.RawResultSet;
-import raw.jdbc.RawResultSetMetaData;
+import raw.jdbc.RsMetaData;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.Map;
 
 public class TestMetadata extends TestQueries {
@@ -39,7 +37,7 @@ public class TestMetadata extends TestQueries {
 
         };
         ResultSet rs = statement.executeQuery(objToQuery(records));
-        RawResultSetMetaData md = (RawResultSetMetaData) rs.getMetaData();
+        RsMetaData md = (RsMetaData) rs.getMetaData();
         assert(md.getColumnCount() == 6);
 
         assert (md.getColumnType(1) == Types.VARCHAR);
@@ -60,8 +58,18 @@ public class TestMetadata extends TestQueries {
     @Test
     public void testCollection() throws SQLException {
         ResultSet rs = statement.executeQuery("collection(1, 2, 3, 4)");
-        RawResultSetMetaData md = (RawResultSetMetaData) rs.getMetaData();
+        RsMetaData md = (RsMetaData) rs.getMetaData();
         assert (md.getColumnType(1) == Types.INTEGER);
         assert (md.getColumnName(1).equals(RawResultSet.SINGLE_ELEM_LABEL));
+    }
+
+    @Test
+    public void testSchemas() throws SQLException {
+        RawDatabaseMetaData md = (RawDatabaseMetaData) conn.getMetaData();
+
+        ResultSet rs = md.getSchemas();
+        while(rs.next()) {
+            logger.fine("Schema: " + rs.getString(1) + " catalog: " + rs.getString(2));
+        }
     }
 }
