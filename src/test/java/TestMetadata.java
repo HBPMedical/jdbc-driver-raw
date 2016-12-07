@@ -1,4 +1,5 @@
 import org.junit.Test;
+import raw.jdbc.RawResultSet;
 import raw.jdbc.RawResultSetMetaData;
 
 import java.sql.ResultSet;
@@ -58,7 +59,10 @@ public class TestMetadata extends TestResultset {
     }
 
     @Test
-    public void testCollection() {
-
+    public void testCollection() throws SQLException {
+        ResultSet rs = statement.executeQuery("collection(1, 2, 3, 4)");
+        RawResultSetMetaData md = (RawResultSetMetaData) rs.getMetaData();
+        assert (md.getColumnType(1) == Types.INTEGER);
+        assert (md.getColumnName(1).equals(RawResultSet.SINGLE_ELEM_LABEL));
     }
 }

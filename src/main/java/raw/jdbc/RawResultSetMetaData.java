@@ -24,11 +24,8 @@ public class RawResultSetMetaData implements ResultSetMetaData {
                 columnNames = map.keySet().toArray(new String[]{});
                 types = new int[columnNames.length];
                 for (int i = 0; i < columnNames.length; i++) {
-                    String name = columnNames[i];
-                    types[i] = objToType(map.get(name));
+                    types[i] = objToType(map.get(columnNames[i]));
                 }
-                logger.fine("names " + Arrays.toString(columnNames)
-                        + " types: " + Arrays.toString(types));
             } else {
                 columnNames = new String[]{RawResultSet.SINGLE_ELEM_LABEL};
                 types = new int[]{objToType(obj)};
@@ -108,11 +105,11 @@ public class RawResultSetMetaData implements ResultSetMetaData {
     }
 
     public String getColumnLabel(int column) throws SQLException {
-        return columnNames[column-1];
+        return columnNames[column - 1];
     }
 
     public String getColumnName(int column) throws SQLException {
-        return columnNames[column-1];
+        return columnNames[column - 1];
     }
 
     public String getSchemaName(int column) throws SQLException {
@@ -136,7 +133,7 @@ public class RawResultSetMetaData implements ResultSetMetaData {
     }
 
     public int getColumnType(int column) throws SQLException {
-        return types[column-1];
+        return types[column - 1];
     }
 
     public boolean isReadOnly(int column) throws SQLException {

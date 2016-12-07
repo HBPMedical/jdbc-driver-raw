@@ -27,7 +27,7 @@ public class RawResultSet implements ResultSet {
     private int currentIndex = -1;
     private String sql;
     private int resultsPerPage = 1000;
-    static final String SINGLE_ELEM_LABEL = "element";
+    public static final String SINGLE_ELEM_LABEL = "element";
 
     static Logger logger = Logger.getLogger(RawResultSet.class.getName());
 
@@ -155,7 +155,7 @@ public class RawResultSet implements ResultSet {
                 return castToType(obj, tClass);
             } else {
                 throw new SQLException("invalid column label" + columnLabel +
-                " expected " + SINGLE_ELEM_LABEL);
+                        " expected " + SINGLE_ELEM_LABEL);
             }
         } else {
             return null;
@@ -201,12 +201,14 @@ public class RawResultSet implements ResultSet {
         try {
             if (tClass == String.class) {
                 return (T) obj.toString();
-            } else if (tClass == float.class) {
+            } else if (tClass == Float.class) {
                 return (T) new Float((Double) obj);
             } else if (tClass == BigDecimal.class) {
                 return (T) BigDecimal.valueOf((Double) obj);
             } else if (tClass.isArray()) {
                 return transformArray((ArrayList) obj, tClass);
+            } else if (tClass == Long.class && obj.getClass() == Integer.class) {
+                return (T) new Long((Integer) obj);
             } else {
                 return (T) obj;
             }
@@ -221,31 +223,31 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean getBoolean(int columnIndex) throws SQLException {
-        return castFromColIndex(columnIndex, boolean.class);
+        return castFromColIndex(columnIndex, Boolean.class);
     }
 
     public byte getByte(int columnIndex) throws SQLException {
-        return castFromColIndex(columnIndex, byte.class);
+        return castFromColIndex(columnIndex, Byte.class);
     }
 
     public short getShort(int columnIndex) throws SQLException {
-        return castFromColIndex(columnIndex, short.class);
+        return castFromColIndex(columnIndex, Short.class);
     }
 
     public int getInt(int columnIndex) throws SQLException {
-        return castFromColIndex(columnIndex, int.class);
+        return castFromColIndex(columnIndex, Integer.class);
     }
 
     public long getLong(int columnIndex) throws SQLException {
-        return castFromColIndex(columnIndex, long.class);
+        return castFromColIndex(columnIndex, Long.class);
     }
 
     public float getFloat(int columnIndex) throws SQLException {
-        return castFromColIndex(columnIndex, float.class);
+        return castFromColIndex(columnIndex, Float.class);
     }
 
     public double getDouble(int columnIndex) throws SQLException {
-        return castFromColIndex(columnIndex, double.class);
+        return castFromColIndex(columnIndex, Double.class);
     }
 
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
@@ -257,27 +259,27 @@ public class RawResultSet implements ResultSet {
     }
 
     public Date getDate(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getDate");
     }
 
     public Time getTime(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getTime");
     }
 
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getTimestamp");
     }
 
     public InputStream getAsciiStream(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getAsciiStream");
     }
 
     public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getUnicodeStream");
     }
 
     public InputStream getBinaryStream(int columnIndex) throws SQLException {
-        return null;
+        throw new UnsupportedOperationException("Not implemented getBinaryStream");
     }
 
     public String getString(String columnLabel) throws SQLException {
@@ -285,31 +287,31 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean getBoolean(String columnLabel) throws SQLException {
-        return castFromColLabel(columnLabel, boolean.class);
+        return castFromColLabel(columnLabel, Boolean.class);
     }
 
     public byte getByte(String columnLabel) throws SQLException {
-        return castFromColLabel(columnLabel, byte.class);
+        return castFromColLabel(columnLabel, Byte.class);
     }
 
     public short getShort(String columnLabel) throws SQLException {
-        return castFromColLabel(columnLabel, short.class);
+        return castFromColLabel(columnLabel, Short.class);
     }
 
     public int getInt(String columnLabel) throws SQLException {
-        return castFromColLabel(columnLabel, int.class);
+        return castFromColLabel(columnLabel, Integer.class);
     }
 
     public long getLong(String columnLabel) throws SQLException {
-        return castFromColLabel(columnLabel, long.class);
+        return castFromColLabel(columnLabel, Long.class);
     }
 
     public float getFloat(String columnLabel) throws SQLException {
-        return castFromColLabel(columnLabel, float.class);
+        return castFromColLabel(columnLabel, Float.class);
     }
 
     public double getDouble(String columnLabel) throws SQLException {
-        return castFromColLabel(columnLabel, double.class);
+        return castFromColLabel(columnLabel, Double.class);
     }
 
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
@@ -370,7 +372,7 @@ public class RawResultSet implements ResultSet {
 
     public int findColumn(String columnLabel) throws SQLException {
         int idx = Arrays.asList(columnNames).indexOf(columnLabel);
-        return idx;
+        return idx + 1;
     }
 
     public Reader getCharacterStream(int columnIndex) throws SQLException {
@@ -444,7 +446,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public int getType() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation getType");
+        return ResultSet.TYPE_FORWARD_ONLY;
     }
 
     public int getConcurrency() throws SQLException {
@@ -452,15 +454,15 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean rowUpdated() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation rowUpdated");
+        return false;
     }
 
     public boolean rowInserted() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation rowInserted");
+        return false;
     }
 
     public boolean rowDeleted() throws SQLException {
-        throw new UnsupportedOperationException("Unsupported operation rowDeleted");
+        return false;
     }
 
     public void updateNull(int columnIndex) throws SQLException {
