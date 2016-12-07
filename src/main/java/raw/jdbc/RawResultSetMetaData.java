@@ -4,52 +4,75 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
-/**
- * Created by torcato on 06.12.16.
- */
 public class RawResultSetMetaData implements ResultSetMetaData {
 
     String[] columnNames;
     int[] types;
-    Object obj;
-    boolean isRecord = false;
+    static Logger logger = Logger.getLogger(RawResultSetMetaData.class.getName());
 
     RawResultSetMetaData(Object[] data) throws SQLException {
         if (data.length > 0) {
-            obj = data[0];
+
+            Object obj = data[0];
             if (obj.getClass() == LinkedHashMap.class) {
                 Map<String, Object> map = (Map) obj;
                 columnNames = map.keySet().toArray(new String[]{});
                 types = new int[columnNames.length];
-                isRecord = true;
-                for (int i = 0; i < columnNames.length; i++){
+                for (int i = 0; i < columnNames.length; i++) {
                     String name = columnNames[i];
                     types[i] = objToType(map.get(name));
                 }
-            } {
-                columnNames = new String[]{"0"};
+                logger.fine("names " + Arrays.toString(columnNames)
+                        + " types: " + Arrays.toString(types));
+            } else {
+                columnNames = new String[]{RawResultSet.SINGLE_ELEM_LABEL};
                 types = new int[]{objToType(obj)};
             }
         }
     }
 
     static private int objToType(Object obj) throws SQLException {
-        if (obj.getClass() == Long.class) {
+        if (obj.getClass() == Integer.class) {
             return Types.INTEGER;
+        } else if (obj.getClass() == Long.class) {
+            return Types.BIGINT;
         } else if (obj.getClass() == String.class) {
             return Types.VARCHAR;
         } else if (obj.getClass() == Double.class) {
             return Types.DOUBLE;
         } else if (obj.getClass() == LinkedHashMap.class) {
-            return Types.JAVA_OBJECT;
+            return Types.STRUCT;
         } else if (obj.getClass() == ArrayList.class) {
             return Types.ARRAY;
         } else {
             throw new SQLException("Unsupported type " + obj.getClass());
         }
+    }
+
+    public String getColumnTypeName(int column) throws SQLException {
+        int type = getColumnType(column);
+        switch (type) {
+            case Types.INTEGER:
+                return "int";
+            case Types.BIGINT:
+                return "long";
+            case Types.VARCHAR:
+                return "string";
+            case Types.DOUBLE:
+                return "double";
+            case Types.STRUCT:
+                return "record";
+            case Types.ARRAY:
+                return "collection";
+            default:
+                return "unknow type";
+        }
+
     }
 
     public int getColumnCount() throws SQLException {
@@ -85,11 +108,11 @@ public class RawResultSetMetaData implements ResultSetMetaData {
     }
 
     public String getColumnLabel(int column) throws SQLException {
-        return columnNames[column];
+        return columnNames[column-1];
     }
 
     public String getColumnName(int column) throws SQLException {
-        return columnNames[column];
+        return columnNames[column-1];
     }
 
     public String getSchemaName(int column) throws SQLException {
@@ -113,19 +136,7 @@ public class RawResultSetMetaData implements ResultSetMetaData {
     }
 
     public int getColumnType(int column) throws SQLException {
-        return types[column];
-    }
-
-    public String getColumnTypeName(int column) throws SQLException {
-        if( isRecord){
-            Map<String, Object> map = (Map) obj;
-            String key = columnNames[column];
-            return map.get(key).getClass().getName();
-        } else if (column == 0) {
-            return obj.getClass().getName();
-        } else {
-            return String.class.getName();
-        }
+        return types[column-1];
     }
 
     public boolean isReadOnly(int column) throws SQLException {

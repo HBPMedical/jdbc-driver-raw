@@ -26,12 +26,12 @@ public class TestResultset extends RawTest {
 
         assert (rs.isBeforeFirst());
         rs.next();
-        assert (rs.getString(0).equals("3"));
-        assert (rs.getInt(0) == 3);
+        assert (rs.getString(1).equals("3"));
+        assert (rs.getInt(1) == 3);
         assert (rs.next());
-        assert (rs.getInt(0) == 4);
+        assert (rs.getInt(1) == 4);
         try {
-            rs.getInt(1);
+            rs.getInt(2);
             throw new RuntimeException("Getting from nonexistent column number must fail");
 
         } catch (IndexOutOfBoundsException e) {
@@ -55,7 +55,7 @@ public class TestResultset extends RawTest {
         for (int i = 0; i < table.length; i++) {
             rs.next();
             for (int j = 0; j < table[i].length; j++) {
-                assert (rs.getInt(j) == table[i][j]);
+                assert (rs.getInt(j+1) == table[i][j]);
             }
         }
     }
@@ -74,7 +74,7 @@ public class TestResultset extends RawTest {
         for (int i = 0; i < table.length; i++) {
             rs.next();
             for (int j = 0; j < table[i].length; j++) {
-                assert (rs.getString(j).equals(table[i][j]));
+                assert (rs.getString(j+1).equals(table[i][j]));
             }
         }
     }
@@ -96,19 +96,19 @@ public class TestResultset extends RawTest {
         for (int n = 0; n < records.length; n++) {
             rs.next();
             assert (rs.getString("_string").equals(records[n].get("_string")));
-            assert (rs.getString(0).equals(records[n].get("_string")));
+            assert (rs.getString(1).equals(records[n].get("_string")));
 
             assert ((Integer) records[n].get("_int") == rs.getInt("_int"));
-            assert (rs.getInt(1) == (Integer) records[n].get("_int"));
+            assert (rs.getInt(2) == (Integer) records[n].get("_int"));
 
             assert (rs.getLong("_long") == (Long) records[n].get("_long"));
-            assert (rs.getLong(2) == (Long) records[n].get("_long"));
+            assert (rs.getLong(3) == (Long) records[n].get("_long"));
 
             assert (rs.getDouble("_double") == (Double) records[n].get("_double"));
-            assert (rs.getDouble(3) == (Double) records[n].get("_double"));
+            assert (rs.getDouble(4) == (Double) records[n].get("_double"));
 
             assert (rs.getFloat("_float") == (Float) records[n].get("_float"));
-            assert (rs.getFloat(4) == (Float) records[n].get("_float"));
+            assert (rs.getFloat(5) == (Float) records[n].get("_float"));
         }
 
         assert (rs.getString("_string").equals("again"));
@@ -214,11 +214,11 @@ public class TestResultset extends RawTest {
         rs.setFetchSize(1);
         for (Integer i : values) {
             rs.next();
-            assert (rs.getInt(0) == i);
+            assert (rs.getInt(1) == i);
         }
     }
 
-    private Map<String, Object> toMap(Object[][] entries) {
+    static protected Map<String, Object> toMap(Object[][] entries) {
         Map<String, Object> map = new LinkedHashMap();
         for (Object[] e : entries) {
             map.put((String) e[0], e[1]);
@@ -227,7 +227,7 @@ public class TestResultset extends RawTest {
     }
 
 
-    private String objToQuery(Object inobj) {
+    static protected String objToQuery(Object inobj) {
         Object obj = convertTypes(inobj);
         if (obj.getClass() == String.class) {
             return "\"" + obj + "\"";
@@ -292,7 +292,7 @@ public class TestResultset extends RawTest {
         }
     }
 
-    private Object convertTypes(Object obj) {
+    static protected Object convertTypes(Object obj) {
         if (obj.getClass() == int.class) {
             return (Integer) obj;
         } else if (obj.getClass() == double.class) {

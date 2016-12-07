@@ -24,10 +24,11 @@ public class ArrayResultSet implements ResultSet {
     }
 
     private <T> T getType(int columnIndex) throws SQLException {
+        System.out.println("index: " + index + "col: " + columnIndex);
         if (index == -1) {
             next();
         }
-        return (T) data[index][columnIndex];
+        return (T) data[index][columnIndex-1];
     }
 
     private <T> T getType(String columnLabel) throws SQLException {
@@ -37,7 +38,7 @@ public class ArrayResultSet implements ResultSet {
 
     public boolean next() throws SQLException {
         index++;
-        return index <= data.length;
+        return index <= data.length -1;
     }
 
     public void close() throws SQLException {

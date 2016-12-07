@@ -27,16 +27,14 @@ public class RawResultSet implements ResultSet {
     private int currentIndex = -1;
     private String sql;
     private int resultsPerPage = 1000;
+    static final String SINGLE_ELEM_LABEL = "element";
 
     static Logger logger = Logger.getLogger(RawResultSet.class.getName());
 
-    RawResultSet(RawRestClient client, String sql, RawStatement parent) {
+    RawResultSet(RawRestClient client, String sql, RawStatement parent) throws SQLException {
         this.client = client;
         this.statement = parent;
         this.sql = sql;
-    }
-
-    private void startQuery() throws SQLException {
         try {
             query = client.queryStart(sql, resultsPerPage);
             if (query.data.length > 0) {
@@ -54,6 +52,7 @@ public class RawResultSet implements ResultSet {
         } catch (IOException e) {
             throw new SQLException("could not start query: " + e.getMessage());
         }
+
     }
 
     public boolean isBeforeFirst() throws SQLException {
@@ -73,9 +72,6 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean next() throws SQLException {
-        if (currentIndex == -1) {
-            startQuery();
-        }
 
         if (currentIndex < query.data.length - 1) {
             currentIndex++;
@@ -103,10 +99,12 @@ public class RawResultSet implements ResultSet {
     }
 
     public void close() throws SQLException {
-        try {
-            client.queryClose(query.token);
-        } catch (IOException e) {
-            throw new SQLException("query-close failed: " + e.getMessage());
+        if (query.hasMore) {
+            try {
+                client.queryClose(query.token);
+            } catch (IOException e) {
+                throw new SQLException("query-close failed: " + e.getMessage());
+            }
         }
     }
 
@@ -116,7 +114,7 @@ public class RawResultSet implements ResultSet {
 
     private <T> T castFromColIndex(int columnIndex, Class<T> tClass) throws SQLException {
         if (currentIndex == -1) {
-            next();
+            return null;
         }
 
         Object obj = query.data[currentIndex];
@@ -124,18 +122,19 @@ public class RawResultSet implements ResultSet {
             return null;
         }
 
+        int idx = columnIndex - 1;
         if (isRecord) {
             Map<String, Object> map = (Map) obj;
-            return castToType(map.get(columnNames[columnIndex]), tClass);
+            return castToType(map.get(columnNames[idx]), tClass);
             //TODO: check if this is allowed
         } else if (obj.getClass().isArray()) {
             Object[] ary = (Object[]) obj;
-            return castToType(ary[columnIndex], tClass);
+            return castToType(ary[idx], tClass);
         } else if (obj.getClass() == ArrayList.class) {
             ArrayList<Object> ary = (ArrayList) obj;
-            return castToType(ary.get(columnIndex), tClass);
-        } else if (columnIndex != 0) {
-            throw new IndexOutOfBoundsException("Row is not record or collection to get column index > 0");
+            return castToType(ary.get(idx), tClass);
+        } else if (idx != 0) {
+            throw new IndexOutOfBoundsException("Row is not record or collection to get column index > 1");
 
         } else {
             return castToType(obj, tClass);
@@ -143,7 +142,7 @@ public class RawResultSet implements ResultSet {
 
     }
 
-    private <T> T castFromColLabel(String columnLabel, Class<T> tClass) {
+    private <T> T castFromColLabel(String columnLabel, Class<T> tClass) throws SQLException {
         if (currentIndex < 0) {
             return null;
         }
@@ -152,8 +151,11 @@ public class RawResultSet implements ResultSet {
             if (isRecord) {
                 LinkedHashMap<String, Object> map = (LinkedHashMap) obj;
                 return castToType(map.get(columnLabel), tClass);
+            } else if (columnLabel == SINGLE_ELEM_LABEL) {
+                return castToType(obj, tClass);
             } else {
-                throw new IndexOutOfBoundsException("column labels are only allowed in record types");
+                throw new SQLException("invalid column label" + columnLabel +
+                " expected " + SINGLE_ELEM_LABEL);
             }
         } else {
             return null;
