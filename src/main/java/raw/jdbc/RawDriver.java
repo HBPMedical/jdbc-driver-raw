@@ -40,9 +40,23 @@ public class RawDriver implements Driver {
     }
 
     public Connection connect(String url, Properties info) throws SQLException {
-
         Properties props = parseProperties(url, info);
-        return new RawConnection(url, props);
+        String authUrl = props.getProperty(RawDriver.AUTH_PROPERTY);
+        String executor = props.getProperty(RawDriver.EXEC_PROPERTY);
+
+        PasswordTokenRequest credentials = new PasswordTokenRequest();
+        credentials.client_id = RawDriver.JDBC_CLIENT_ID;
+        credentials.client_secret = null;
+        credentials.grant_type = RawDriver.GRANT_TYPE;
+        credentials.username = props.getProperty(RawDriver.USER_PROPERTY);
+        credentials.password = props.getProperty(RawDriver.PASSWD_PROPERTY);
+        try {
+            RawRestClient client = new RawRestClient(executor, authUrl, credentials);
+            return new RawConnection(url, client, credentials.username);
+        } catch (IOException e) {
+            throw new SQLException("Could not get authorization token" + e.getMessage());
+        }
+
     }
 
     public static Properties parseUrl(String url) throws SQLException {

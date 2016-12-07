@@ -2,6 +2,7 @@ package raw.jdbc;
 
 import raw.jdbc.rawclient.RawRestClient;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -528,7 +529,19 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getSchemas() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getSchemas");
+        try {
+            String[] schemas = client.getSchemas();
+            String[][] rsSchemas = new String[schemas.length][];
+            for (int i = 0; i < schemas.length; i++) {
+                rsSchemas[i] = new String[]{schemas[i], user};
+            }
+            Map<String, Integer> columnNames = new LinkedHashMap<String, Integer>();
+            columnNames.put("TABLE_SCHEM", 1);
+            columnNames.put("TABLE_CATALOG", 2);
+            return new ArrayResultSet(rsSchemas, columnNames);
+        } catch (IOException e) {
+            throw new SQLException("Could not list schemas: " + e.getMessage());
+        }
     }
 
     public ResultSet getCatalogs() throws SQLException {
@@ -539,7 +552,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
         String[][] tables = new String[][]{{"TABLE"}, {"VIEW"}};
         Map<String, Integer> names = new LinkedHashMap<String, Integer>();
-        names.put("table_type", 0);
+        names.put("table_type", 1);
         return new ArrayResultSet(tables, names);
     }
 
@@ -713,7 +726,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getSchemas");
+        throw new UnsupportedOperationException("not implemented getSchemas with search pattern");
     }
 
     public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {

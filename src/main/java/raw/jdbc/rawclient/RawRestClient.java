@@ -30,6 +30,10 @@ public class RawRestClient {
         this.executerUrl = executor;
     }
 
+    public RawRestClient(String executor, String authUrl, PasswordTokenRequest credentials) throws IOException {
+        this(executor, getPasswdGrantToken(authUrl, credentials));
+    }
+
     /**
      * Gets a token using password authentication to an oauth2 server
      *

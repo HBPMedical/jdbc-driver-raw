@@ -8,12 +8,12 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-public class TestResultset extends RawTest {
+public class TestQueries extends RawTest {
 
 
     Connection conn;
 
-    public TestResultset() throws SQLException {
+    public TestQueries() throws SQLException {
         String url = "jdbc:raw:http://localhost:54321";
         RawDriver driver = new RawDriver();
         conn = driver.connect(url, conf);

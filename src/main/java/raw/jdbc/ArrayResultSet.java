@@ -32,7 +32,7 @@ public class ArrayResultSet implements ResultSet {
     }
 
     private <T> T getType(String columnLabel) throws SQLException {
-        int idx = names.get(columnLabel);
+        int idx = names.get(columnLabel)-1;
         return getType(idx);
     }
 

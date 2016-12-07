@@ -347,11 +347,11 @@ public class RawResultSet implements ResultSet {
     }
 
     public SQLWarning getWarnings() throws SQLException {
-        throw new UnsupportedOperationException("Not supported getWarnings");
+        //TODO: add warnings here
+        return null;
     }
 
     public void clearWarnings() throws SQLException {
-        throw new UnsupportedOperationException("Not supported clearWarnings");
     }
 
     public String getCursorName() throws SQLException {

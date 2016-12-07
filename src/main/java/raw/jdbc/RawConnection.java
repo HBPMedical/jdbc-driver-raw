@@ -11,31 +11,15 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 public class RawConnection implements Connection {
-    private String authUrl;
     private RawRestClient client;
-    private Properties properties;
+    private Properties properties = new Properties();
     private String url;
+    private String user;
 
-    RawConnection(String url, Properties props) throws SQLException {
-        this.properties = props;
+    RawConnection(String url, RawRestClient client, String user) throws SQLException {
         this.url = url;
-
-        PasswordTokenRequest credentials = new PasswordTokenRequest();
-        credentials.client_id = RawDriver.JDBC_CLIENT_ID;
-        credentials.client_secret = null;
-        credentials.grant_type = RawDriver.GRANT_TYPE;
-        credentials.username = props.getProperty(RawDriver.USER_PROPERTY);
-        credentials.password = props.getProperty(RawDriver.PASSWD_PROPERTY);
-
-        try {
-            String authUrl = properties.getProperty(RawDriver.AUTH_PROPERTY);
-            String executor = properties.getProperty(RawDriver.EXEC_PROPERTY);
-            TokenResponse token = RawRestClient.getPasswdGrantToken(authUrl, credentials);
-            this.authUrl = authUrl;
-            this.client = new RawRestClient(executor, token);
-        } catch (IOException e) {
-            throw new SQLException("Unable to get bearer token for jdbc connection: " + e.getMessage());
-        }
+        this.client = client;
+        this.user = user;
 
     }
 
@@ -76,11 +60,11 @@ public class RawConnection implements Connection {
     }
 
     public void commit() throws SQLException {
-
+        throw new SQLFeatureNotSupportedException("not supported commit");
     }
 
     public void rollback() throws SQLException {
-
+        throw new SQLFeatureNotSupportedException("not supported rollback");
     }
 
     public void close() throws SQLException {
@@ -92,7 +76,6 @@ public class RawConnection implements Connection {
     }
 
     public DatabaseMetaData getMetaData() throws SQLException {
-        String user = this.properties.getProperty(RawDriver.USER_PROPERTY);
         return new RawDatabaseMetaData(url, user, client);
     }
 
@@ -109,60 +92,55 @@ public class RawConnection implements Connection {
     }
 
     public String getCatalog() throws SQLException {
-        try {
-            String[] schemas = client.getSchemas();
-            return schemas.toString();
-        } catch (IOException e) {
-            throw new SQLException("Error getting schemas: "+ e.getMessage());
-        }
+        return null;
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
-        throw new UnsupportedOperationException("not implemented setTransactionIsolation");
+        throw new SQLFeatureNotSupportedException("not supported setTransactionIsolation");
     }
 
     public int getTransactionIsolation() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getTransactionIsolation");
+        throw new SQLFeatureNotSupportedException("not supported getTransactionIsolation");
     }
 
     public SQLWarning getWarnings() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getWarnings");
+        return null;
     }
 
     public void clearWarnings() throws SQLException {
-        throw new UnsupportedOperationException("not implemented clearWarnings");
+
     }
 
     public Map<String, Class<?>> getTypeMap() throws SQLException {
-        throw new UnsupportedOperationException("not implemented");
+        throw new SQLFeatureNotSupportedException("not implemented");
     }
 
     public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-        throw new UnsupportedOperationException("not implemented setTypeMap");
+        throw new SQLFeatureNotSupportedException("not implemented setTypeMap");
     }
 
     public void setHoldability(int holdability) throws SQLException {
-        throw new UnsupportedOperationException("not implemented setHoldability");
+        throw new SQLFeatureNotSupportedException("not implemented setHoldability");
     }
 
     public int getHoldability() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getHoldability");
+        return ResultSet.HOLD_CURSORS_OVER_COMMIT;
     }
 
     public Savepoint setSavepoint() throws SQLException {
-        throw new UnsupportedOperationException("not supported setSavepoint");
+        throw new SQLFeatureNotSupportedException("not supported setSavepoint");
     }
 
     public Savepoint setSavepoint(String name) throws SQLException {
-        throw new UnsupportedOperationException("not supported setSavepoint");
+        throw new SQLFeatureNotSupportedException("not supported setSavepoint");
     }
 
     public void rollback(Savepoint savepoint) throws SQLException {
-        throw new UnsupportedOperationException("not supported rollback");
+        throw new SQLFeatureNotSupportedException("not supported rollback");
     }
 
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        throw new UnsupportedOperationException("not implemented releaseSavepoint");
+        throw new SQLFeatureNotSupportedException("not implemented releaseSavepoint");
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
@@ -190,21 +168,21 @@ public class RawConnection implements Connection {
     }
 
     public Clob createClob() throws SQLException {
-        throw new UnsupportedOperationException("not implemented createClob");
+        throw new SQLFeatureNotSupportedException("not implemented createClob");
     }
 
     public Blob createBlob() throws SQLException {
-        throw new UnsupportedOperationException("not implemented createBlob");
+        throw new SQLFeatureNotSupportedException("not implemented createBlob");
     }
 
     @SuppressWarnings("Since15")
     public NClob createNClob() throws SQLException {
-        throw new UnsupportedOperationException("not implemented createNClob");
+        throw new SQLFeatureNotSupportedException("not implemented createNClob");
     }
 
     @SuppressWarnings("Since15")
     public SQLXML createSQLXML() throws SQLException {
-        throw new UnsupportedOperationException("not implemented createSQLXML");
+        throw new SQLFeatureNotSupportedException("not implemented createSQLXML");
     }
 
     public boolean isValid(int timeout) throws SQLException {
@@ -214,7 +192,7 @@ public class RawConnection implements Connection {
     @SuppressWarnings("Since15")
     public void setClientInfo(String name, String value) throws SQLClientInfoException {
         throw new UnsupportedOperationException("not implemented setClientInfo " +
-        "name: "+ name + " value: " + value);
+                "name: " + name + " value: " + value);
     }
 
     @SuppressWarnings("Since15")
@@ -243,7 +221,7 @@ public class RawConnection implements Connection {
     }
 
     public String getSchema() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getSchema");
+        return null;
     }
 
     public void abort(Executor executor) throws SQLException {

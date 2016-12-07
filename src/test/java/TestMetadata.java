@@ -3,13 +3,12 @@ import raw.jdbc.RawResultSet;
 import raw.jdbc.RawResultSetMetaData;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.Map;
 
-public class TestMetadata extends TestResultset {
+public class TestMetadata extends TestQueries {
 
     Statement statement;
 
