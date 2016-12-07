@@ -753,11 +753,11 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public int getDatabaseMajorVersion() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getDatabaseMajorVersion");
+        return 0;
     }
 
     public int getDatabaseMinorVersion() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getDatabaseMinorVersion");
+        return 1;
     }
 
     public int getJDBCMajorVersion() throws SQLException {
@@ -785,7 +785,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getSchemas(String catalog, String schemaPattern) throws SQLException {
-        throw new UnsupportedOperationException("not implemented getSchemas with search pattern");
+        //TODO: implement search
+        return getSchemas();
     }
 
     public boolean supportsStoredFunctionsUsingCallSyntax() throws SQLException {
