@@ -128,18 +128,18 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public String getSQLKeywords() throws SQLException {
-        return "select|distinct|from|where|group|by|having|in|union|order|desc|asc|" +
-                "if|then|else|parse|parse?|into|not|and|or|flatten|like|" +
-                "as|as?|all|cast|partition|on|error|fail|skip|isnull|isnone|collection";
+        return "select,distinct,from,where,group,by,having,in,union,order,desc,asc," +
+                "if,then,else,parse,parse?,into,not,and,or,flatten,like," +
+                "as,as?,all,cast,partition,on,error,fail,skip,isnull,isnone,collection";
     }
 
     public String getNumericFunctions() throws SQLException {
-        return "avg|count|max|min|min?|max?|sum";
+        return "avg,count,max,min,min?,max?,sum";
     }
 
     public String getStringFunctions() throws SQLException {
-        return "trim|startswith|strempty|strtodate|strtodate?|" +
-                "strtotime|strtotime?|strtotimestamp|strtotimestamp?";
+        return "trim,startswith,strempty,strtodate,strtodate?," +
+                "strtotime,strtotime?,strtotimestamp,strtotimestamp?";
     }
 
     public String getSystemFunctions() throws SQLException {
@@ -147,8 +147,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public String getTimeDateFunctions() throws SQLException {
-        return "strtodate|strtodate?|strtotime|" +
-                "strtotime?|strtotimestamp|strtotimestamp?";
+        return "strtodate,strtodate?,strtotime," +
+                "strtotime?,strtotimestamp,strtotimestamp?";
     }
 
     public String getSearchStringEscape() throws SQLException {
@@ -661,7 +661,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     public boolean supportsResultSetType(int type) throws SQLException {
         //for the moment we only support the advance only
-        return type == 0;
+        return type == ResultSet.TYPE_FORWARD_ONLY;
     }
 
     public boolean supportsResultSetConcurrency(int type, int concurrency) throws SQLException {

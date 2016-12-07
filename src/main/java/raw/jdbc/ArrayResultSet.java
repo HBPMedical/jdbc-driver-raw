@@ -27,16 +27,25 @@ public class ArrayResultSet implements ResultSet {
         this.data = data;
     }
 
-    private <T> T getType(int columnIndex) throws SQLException {
+    private <T> T getType(int columnIndex, Class<T> tClass) throws SQLException {
         if (index == -1) {
             next();
         }
-        return (T) data[index][columnIndex - 1];
+        Object obj = data[index][columnIndex - 1];
+        if(tClass == Short.class && obj.getClass() == Integer.class) {
+            Integer i = (Integer) obj;
+            return (T) (Short) i.shortValue();
+        } else if (tClass == Byte.class && obj.getClass() == Integer.class) {
+            Integer i = (Integer) obj;
+            return (T) (Byte) i.byteValue();
+        } else {
+            return (T) obj;
+        }
     }
 
-    private <T> T getType(String columnLabel) throws SQLException {
+    private <T> T getType(String columnLabel, Class<T> tClass) throws SQLException {
         int idx = names.get(columnLabel);
-        return getType(idx);
+        return getType(idx, tClass);
     }
 
     public boolean next() throws SQLException {
@@ -53,39 +62,39 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public String getString(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, String.class);
     }
 
     public boolean getBoolean(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Boolean.class);
     }
 
     public byte getByte(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Byte.class);
     }
 
     public short getShort(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Short.class);
     }
 
     public int getInt(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Integer.class);
     }
 
     public long getLong(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Long.class);
     }
 
     public float getFloat(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Float.class);
     }
 
     public double getDouble(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Double.class);
     }
 
     public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, BigDecimal.class);
     }
 
     public byte[] getBytes(int columnIndex) throws SQLException {
@@ -93,91 +102,91 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public Date getDate(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Date.class);
     }
 
     public Time getTime(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Time.class);
     }
 
     public Timestamp getTimestamp(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Timestamp.class);
     }
 
     public InputStream getAsciiStream(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, InputStream.class);
     }
 
     public InputStream getUnicodeStream(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, InputStream.class);
     }
 
     public InputStream getBinaryStream(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, InputStream.class);
     }
 
     public String getString(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, String.class);
     }
 
     public boolean getBoolean(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Boolean.class);
     }
 
     public byte getByte(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Byte.class);
     }
 
     public short getShort(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Short.class);
     }
 
     public int getInt(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Integer.class);
     }
 
     public long getLong(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Long.class);
     }
 
     public float getFloat(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Float.class);
     }
 
     public double getDouble(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Double.class);
     }
 
     public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, BigDecimal.class);
     }
 
     public byte[] getBytes(String columnLabel) throws SQLException {
-        return new byte[0];
+        return getType(columnLabel, byte[].class);
     }
 
     public Date getDate(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Date.class);
     }
 
     public Time getTime(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Time.class);
     }
 
     public Timestamp getTimestamp(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Timestamp.class);
     }
 
     public InputStream getAsciiStream(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, InputStream.class);
     }
 
     public InputStream getUnicodeStream(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, InputStream.class);
     }
 
     public InputStream getBinaryStream(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, InputStream.class);
     }
 
     public SQLWarning getWarnings() throws SQLException {
@@ -198,31 +207,31 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public Object getObject(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Object.class);
     }
 
     public Object getObject(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Object.class);
     }
 
     public int findColumn(String columnLabel) throws SQLException {
-        return 0;
+        return names.get(columnLabel+1);
     }
 
     public Reader getCharacterStream(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Reader.class);
     }
 
     public Reader getCharacterStream(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Reader.class);
     }
 
     public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, BigDecimal.class);
     }
 
     public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, BigDecimal.class);
     }
 
     public boolean isBeforeFirst() throws SQLException {
@@ -494,8 +503,7 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
-        Map obj = getType(columnIndex);
-        return (Object) obj;
+        return getType(columnIndex, Map.class);
     }
 
     public Ref getRef(int columnIndex) throws SQLException {
@@ -503,11 +511,11 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public Blob getBlob(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Blob.class);
     }
 
     public Clob getClob(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Clob.class);
     }
 
     public Array getArray(int columnIndex) throws SQLException {
@@ -515,8 +523,7 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
-        Map obj = getType(columnLabel);
-        return (Object) obj;
+        return getType(columnLabel, Object.class);
     }
 
     public Ref getRef(String columnLabel) throws SQLException {
@@ -524,47 +531,47 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public Blob getBlob(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Blob.class);
     }
 
     public Clob getClob(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Clob.class);
     }
 
     public Array getArray(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Array.class);
     }
 
     public Date getDate(int columnIndex, Calendar cal) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Date.class);
     }
 
     public Date getDate(String columnLabel, Calendar cal) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Date.class);
     }
 
     public Time getTime(int columnIndex, Calendar cal) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Time.class);
     }
 
     public Time getTime(String columnLabel, Calendar cal) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Time.class);
     }
 
     public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, Timestamp.class);
     }
 
     public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, Timestamp.class);
     }
 
     public URL getURL(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, URL.class);
     }
 
     public URL getURL(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, URL.class);
     }
 
     public void updateRef(int columnIndex, Ref x) throws SQLException {
@@ -640,11 +647,11 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public NClob getNClob(int columnIndex) throws SQLException {
-        return getType(columnIndex);
+        return getType(columnIndex, NClob.class);
     }
 
     public NClob getNClob(String columnLabel) throws SQLException {
-        return getType(columnLabel);
+        return getType(columnLabel, NClob.class);
     }
 
     public SQLXML getSQLXML(int columnIndex) throws SQLException {
