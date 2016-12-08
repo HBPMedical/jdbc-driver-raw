@@ -55,7 +55,7 @@ public class RawConnection implements Connection {
     }
 
     public void commit() throws SQLException {
-        throw new SQLFeatureNotSupportedException("not supported commit");
+        throw new SQLException("not supported commit");
     }
 
     public void rollback() throws SQLException {
@@ -63,7 +63,7 @@ public class RawConnection implements Connection {
     }
 
     public void close() throws SQLException {
-
+        //TODO: close all live queries
     }
 
     public boolean isClosed() throws SQLException {
@@ -87,7 +87,7 @@ public class RawConnection implements Connection {
     }
 
     public String getCatalog() throws SQLException {
-        return null;
+        return this.username;
     }
 
     public void setTransactionIsolation(int level) throws SQLException {
@@ -95,7 +95,7 @@ public class RawConnection implements Connection {
     }
 
     public int getTransactionIsolation() throws SQLException {
-        throw new SQLFeatureNotSupportedException("not supported getTransactionIsolation");
+        return  Connection.TRANSACTION_NONE;
     }
 
     public SQLWarning getWarnings() throws SQLException {
@@ -163,25 +163,25 @@ public class RawConnection implements Connection {
     }
 
     public Clob createClob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("not implemented createClob");
+        throw new SQLFeatureNotSupportedException("not supported createClob");
     }
 
     public Blob createBlob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("not implemented createBlob");
+        throw new SQLFeatureNotSupportedException("not supported createBlob");
     }
 
     @SuppressWarnings("Since15")
     public NClob createNClob() throws SQLException {
-        throw new SQLFeatureNotSupportedException("not implemented createNClob");
+        throw new SQLFeatureNotSupportedException("not supported createNClob");
     }
 
     @SuppressWarnings("Since15")
     public SQLXML createSQLXML() throws SQLException {
-        throw new SQLFeatureNotSupportedException("not implemented createSQLXML");
+        throw new SQLFeatureNotSupportedException("not supported createSQLXML");
     }
 
     public boolean isValid(int timeout) throws SQLException {
-        return false;
+        return true;
     }
 
     @SuppressWarnings("Since15")

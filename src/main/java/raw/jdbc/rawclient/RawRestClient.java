@@ -71,6 +71,11 @@ public class RawRestClient {
         return data;
     }
 
+    public TabularSchema[] getTabularSchema() throws IOException {
+        TabularSchemaResponse data = doGet("/tabular-schemas", TabularSchemaResponse.class);
+        return data.schemas;
+    }
+
     public String[] getSchemas() throws IOException {
         SchemasResponse data = doGet("/schemas", SchemasResponse.class);
         return data.schemas;

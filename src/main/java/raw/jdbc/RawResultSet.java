@@ -111,12 +111,17 @@ public class RawResultSet implements ResultSet {
         return false;
     }
 
-    private <T> T castFromColIndex(int columnIndex, Class<T> tClass) throws SQLException {
-        if (currentIndex == -1) {
+    private Object getCurrentObj() {
+        if (currentIndex < 0) {
             return null;
-        }
+        } else {
 
-        Object obj = query.data[currentIndex];
+            return query.data[currentIndex];
+        }
+    }
+
+    private <T> T castFromColIndex(int columnIndex, Class<T> tClass) throws SQLException {
+        Object obj = getCurrentObj();
         if (obj == null) {
             return null;
         }
@@ -142,10 +147,7 @@ public class RawResultSet implements ResultSet {
     }
 
     private <T> T castFromColLabel(String columnLabel, Class<T> tClass) throws SQLException {
-        if (currentIndex < 0) {
-            return null;
-        }
-        Object obj = query.data[currentIndex];
+        Object obj = getCurrentObj();
         if (obj != null) {
             if (isRecord) {
                 LinkedHashMap<String, Object> map = (LinkedHashMap) obj;
@@ -360,17 +362,15 @@ public class RawResultSet implements ResultSet {
     public ResultSetMetaData getMetaData() throws SQLException {
         //TODO: Handle nulls (try to check next element)
         if (query.data.length > 0) {
-            Object obj = query.data[0];
-            int[] types;
+            int[] types = new int[columnNames.length];
             if (isRecord) {
-                Map<String, Object> map = (Map) obj;
-                types = new int[columnNames.length];
+                Map map = (LinkedHashMap<String, Object>) query.data[0];
                 for (int i = 0; i < columnNames.length; i++) {
-                    types[i] = RsMetaData.objToType(map.get(columnNames[i]));
+                    int t = RsMetaData.objToType(map.get(columnNames[i]));
+                    types[i] = t;
                 }
             } else {
-                columnNames = new String[]{RawResultSet.SINGLE_ELEM_LABEL};
-                types = new int[]{RsMetaData.objToType(obj)};
+                types[0] = RsMetaData.objToType(query.data[0]);
             }
             return new RsMetaData(columnNames, types);
         } else {

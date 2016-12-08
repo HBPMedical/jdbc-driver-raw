@@ -39,6 +39,7 @@ public class TestMetadata extends TestQueries {
         ResultSet rs = statement.executeQuery(objToQuery(records));
         RsMetaData md = (RsMetaData) rs.getMetaData();
         assert(md.getColumnCount() == 6);
+        logger.fine("col 1: type: " + md.getColumnType(1));
 
         assert (md.getColumnType(1) == Types.VARCHAR);
         assert (md.getColumnType(2) == Types.INTEGER);
@@ -71,5 +72,7 @@ public class TestMetadata extends TestQueries {
         while(rs.next()) {
             logger.fine("Schema: " + rs.getString(1) + " catalog: " + rs.getString(2));
         }
+
+        md.getTables()
     }
 }

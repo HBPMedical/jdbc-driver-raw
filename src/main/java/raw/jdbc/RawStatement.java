@@ -47,7 +47,7 @@ public class RawStatement implements Statement {
     }
 
     public void setMaxRows(int max) throws SQLException {
-        throw new UnsupportedOperationException("Not implemented setMaxRows");
+        //TODO: implement this
     }
 
     public void setEscapeProcessing(boolean enable) throws SQLException {
@@ -68,11 +68,10 @@ public class RawStatement implements Statement {
     }
 
     public SQLWarning getWarnings() throws SQLException {
-        throw new UnsupportedOperationException("Not implemented getWarnings");
+        return null;
     }
 
     public void clearWarnings() throws SQLException {
-        throw new UnsupportedOperationException("Not implemented clearWarnings");
 
     }
 
@@ -96,7 +95,7 @@ public class RawStatement implements Statement {
     }
 
     public boolean getMoreResults() throws SQLException {
-        throw new UnsupportedOperationException("Not implemented getMoreResults");
+        return false;
     }
 
     public void setFetchDirection(int direction) throws SQLException {
