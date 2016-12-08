@@ -73,6 +73,6 @@ public class TestMetadata extends TestQueries {
             logger.fine("Schema: " + rs.getString(1) + " catalog: " + rs.getString(2));
         }
 
-        md.getTables()
+
     }
 }

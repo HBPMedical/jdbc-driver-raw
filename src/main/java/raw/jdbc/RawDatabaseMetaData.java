@@ -1,12 +1,10 @@
 package raw.jdbc;
 
 import raw.jdbc.rawclient.RawRestClient;
+import raw.jdbc.rawclient.requests.SchemaInfo;
 
 import java.io.IOException;
 import java.sql.*;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
 
 public class RawDatabaseMetaData implements DatabaseMetaData {
 
@@ -529,46 +527,47 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         //TODO: Make the search work, check the difference for us between schema and table
-        String[] schemas = requestSchemas();
-        String[] columnNames = new String[]{
-                "TABLE_CAT",
-                "TABLE_SCHEM",
-                "TABLE_TYPE",
-                "REMARKS",
-                "TYPE_CAT",
-                "TYPE_SCHEM",
-                "TYPE_NAME",
-                "SELF_REFERENCING_COL_NAME",
-                "REF_GENERATION"
-        };
 
-        String[][] data = new String[schemas.length][];
-        for (int i = 0; i < schemas.length; i++) {
-            data[i] = new String[]{
-                    user, schemas[i], schemas[i], "TABLE", "user table",
-                    null, null, null, null, null};
-        }
-        return new ArrayResultSet(data, columnNames);
-    }
-
-    String[] requestSchemas() throws SQLException {
         try {
-            return client.getSchemas();
+            SchemaInfo[] schemas = client.getSchemaInfo();
+            String[] columnNames = new String[]{
+                    "TABLE_CAT",
+                    "TABLE_SCHEM",
+                    "TABLE_NAME",
+                    "TABLE_TYPE",
+                    "REMARKS",
+                    "TYPE_CAT",
+                    "TYPE_SCHEM",
+                    "TYPE_NAME",
+                    "SELF_REFERENCING_COL_NAME",
+                    "REF_GENERATION"
+            };
+
+            String[][] data = new String[schemas.length][];
+            for (int i = 0; i < schemas.length; i++) {
+                data[i] = new String[]{
+                        user, schemas[i].name, schemas[i].name, "TABLE", "user table",
+                        null, null, null, null, null};
+            }
+            return new ArrayResultSet(data, columnNames);
         } catch (IOException e) {
-            throw new SQLException("Could not list schemas: " + e.getMessage());
+            throw new SQLException("Could not get table info: " + e.getMessage());
         }
     }
 
     public ResultSet getSchemas() throws SQLException {
 
-        String[] schemas = requestSchemas();
-        String[][] rsSchemas = new String[schemas.length][];
-        for (int i = 0; i < schemas.length; i++) {
-            rsSchemas[i] = new String[]{schemas[i], user};
+        try {
+            String[] schemas = client.getSchemas();
+            String[][] rsSchemas = new String[schemas.length][];
+            for (int i = 0; i < schemas.length; i++) {
+                rsSchemas[i] = new String[]{schemas[i], user};
+            }
+            String[] columnNames = new String[]{"TABLE_SCHEM", "TABLE_CATALOG"};
+            return new ArrayResultSet(rsSchemas, columnNames);
+        } catch (IOException e) {
+            throw new SQLException("could not list schemas" + e.getMessage());
         }
-        String[] columnNames = new String[]{"TABLE_SCHEM", "TABLE_CATALOG"};
-        return new ArrayResultSet(rsSchemas, columnNames);
-
     }
 
     public ResultSet getCatalogs() throws SQLException {

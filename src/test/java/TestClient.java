@@ -2,9 +2,12 @@ import org.json.simple.parser.ParseException;
 import org.junit.Test;
 import raw.jdbc.rawclient.requests.QueryBlockResponse;
 import raw.jdbc.rawclient.RawRestClient;
+import raw.jdbc.rawclient.requests.SchemaInfo;
+import raw.jdbc.rawclient.requests.SchemaInfoColumn;
 import raw.jdbc.rawclient.requests.TokenResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class TestClient extends RawTest {
 
@@ -40,5 +43,16 @@ public class TestClient extends RawTest {
     public void testQueryStart() throws IOException, ParseException {
         QueryBlockResponse resp = client.queryStart("collection(1,2,4)", 100);
         logger.fine("execution time: " + resp.executionTime);
+    }
+
+    @Test
+    public void testGetTabularSchemas() throws IOException, ParseException {
+        SchemaInfo[] resp = client.getSchemaInfo();
+        for (SchemaInfo schema : resp) {
+            logger.fine("schema: " + schema.name + "sql: " + schema.schemaType);
+            SchemaInfoColumn info = schema.columns[0];
+            logger.fine("column: " + info.name + " -> " + info.tipe);
+        }
+
     }
 }
