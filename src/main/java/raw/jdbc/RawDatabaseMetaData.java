@@ -2,9 +2,12 @@ package raw.jdbc;
 
 import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.SchemaInfo;
+import raw.jdbc.rawclient.requests.SchemaInfoColumn;
 
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class RawDatabaseMetaData implements DatabaseMetaData {
 
@@ -12,12 +15,18 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     String user;
     RawRestClient client;
     Connection connecion;
+    SchemaInfo[] schemas;
 
-    RawDatabaseMetaData(String url, String user, RawRestClient client, Connection connecion) {
+    RawDatabaseMetaData(String url, String user, RawRestClient client, Connection connection) throws SQLException {
         this.url = url;
         this.user = user;
         this.client = client;
-        this.connecion = connecion;
+        this.connecion = connection;
+        try {
+            schemas = client.getSchemaInfo();
+        } catch (IOException e) {
+            throw new SQLException("could not get schema info " + e.getMessage());
+        }
     }
 
     public boolean allProceduresAreCallable() throws SQLException {
@@ -525,49 +534,50 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         throw new SQLFeatureNotSupportedException("not implemented getProcedureColumns");
     }
 
+    SchemaInfo[] findTable(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
+        ArrayList<SchemaInfo> out = new ArrayList<SchemaInfo>();
+        for (SchemaInfo info : schemas) {
+            if (info.name == tableNamePattern) {
+                if (types == null) {
+                    out.add(info);
+                } else if (Arrays.asList(types).contains(info.schemaType)) {
+                    out.add(info);
+                }
+            }
+        }
+        return out.toArray(new SchemaInfo[]{});
+    }
+
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         //TODO: Make the search work, check the difference for us between schema and table
 
-        try {
-            SchemaInfo[] schemas = client.getSchemaInfo();
-            String[] columnNames = new String[]{
-                    "TABLE_CAT",
-                    "TABLE_SCHEM",
-                    "TABLE_NAME",
-                    "TABLE_TYPE",
-                    "REMARKS",
-                    "TYPE_CAT",
-                    "TYPE_SCHEM",
-                    "TYPE_NAME",
-                    "SELF_REFERENCING_COL_NAME",
-                    "REF_GENERATION"
-            };
+        String[] columnNames = new String[]{
+                "TABLE_CAT",
+                "TABLE_SCHEM",
+                "TABLE_NAME",
+                "TABLE_TYPE",
+                "REMARKS",
+                "TYPE_CAT",
+                "TYPE_SCHEM",
+                "TYPE_NAME",
+                "SELF_REFERENCING_COL_NAME",
+                "REF_GENERATION"
+        };
 
-            String[][] data = new String[schemas.length][];
-            for (int i = 0; i < schemas.length; i++) {
-                data[i] = new String[]{
-                        user, schemas[i].name, schemas[i].name, "TABLE", "user table",
-                        null, null, null, null, null};
-            }
-            return new ArrayResultSet(data, columnNames);
-        } catch (IOException e) {
-            throw new SQLException("Could not get table info: " + e.getMessage());
+        SchemaInfo[] matches = findTable(catalog, schemaPattern, tableNamePattern, types);
+        String[][] data = new String[matches.length][];
+        for (int i = 0; i < matches.length; i++) {
+            data[i] = new String[]{
+                    user, matches[i].name, matches[i].name, matches[i].schemaType, "user table",
+                    null, null, null, null, null};
         }
+        return new ArrayResultSet(data, columnNames);
     }
 
     public ResultSet getSchemas() throws SQLException {
-
-        try {
-            String[] schemas = client.getSchemas();
-            String[][] rsSchemas = new String[schemas.length][];
-            for (int i = 0; i < schemas.length; i++) {
-                rsSchemas[i] = new String[]{schemas[i], user};
-            }
-            String[] columnNames = new String[]{"TABLE_SCHEM", "TABLE_CATALOG"};
-            return new ArrayResultSet(rsSchemas, columnNames);
-        } catch (IOException e) {
-            throw new SQLException("could not list schemas" + e.getMessage());
-        }
+        String[][] rsSchemas = new String[][]{{user, user}};
+        String[] columnNames = new String[]{"TABLE_SCHEM", "TABLE_CATALOG"};
+        return new ArrayResultSet(rsSchemas, columnNames);
     }
 
     public ResultSet getCatalogs() throws SQLException {
@@ -577,13 +587,51 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     public ResultSet getTableTypes() throws SQLException {
         String[][] tables = new String[][]{{"TABLE"}, {"VIEW"}};
-        return new ArrayResultSet(tables, new String[]{"table_type"});
+        return new ArrayResultSet(tables, new String[]{"source", "view"});
     }
 
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+
+        String[] fields = new String[]{
+                "TABLE_CAT", // String
+                "TABLE_SCHEM", // String
+                "TABLE_NAME", // String
+                "COLUMN_NAME", // String
+                "DATA_TYPE", // int
+                "TYPE_NAME", // String
+                "COLUMN_SIZE", // int
+                "BUFFER_LENGTH", // is not used.
+                "DECIMAL_DIGITS", // int
+                "NUM_PREC_RADIX", // int
+                "NULLABLE", // int
+                "REMARKS", // String
+                "COLUMN_DEF", // String
+                "SQL_DATA_TYPE", // int
+                "SQL_DATETIME_SUB", // int
+                "CHAR_OCTET_LENGTH", // int
+                "ORDINAL_POSITION", // int
+                "IS_NULLABLE", // String
+                "SCOPE_CATALOG", // String
+                "SCOPE_SCHEMA", // String
+                "SCOPE_TABLE", // String
+                "SOURCE_DATA_TYPE", // short
+                "IS_AUTOINCREMENT", // String
+                "IS_GENERATEDCOLUMN", // String
+        };
+
+        SchemaInfo[] matches = findTable(catalog, schemaPattern, tableNamePattern, null);
         //TODO: implement this
-        Object[][] data = new Object[][]{};
-        String[] fields = new String[]{};
+        ArrayList<Object[]> data = new ArrayList<Object[]>();
+        for (SchemaInfo info : matches) {
+            for (SchemaInfoColumn col : info.columns){
+                Object[] obj = new Object[]{
+                        user,
+                        user,
+                        info.name,
+                        
+                };
+            }
+        }
         return new ArrayResultSet(data, fields);
     }
 
