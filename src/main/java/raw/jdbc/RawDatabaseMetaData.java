@@ -23,11 +23,11 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public boolean allProceduresAreCallable() throws SQLException {
-        throw new UnsupportedOperationException("not implemented allProceduresAreCallable");
+        return false;
     }
 
     public boolean allTablesAreSelectable() throws SQLException {
-        throw new UnsupportedOperationException("not implemented allTablesAreSelectable");
+        return true;
     }
 
     public String getURL() throws SQLException {
@@ -216,7 +216,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public boolean supportsMultipleResultSets() throws SQLException {
-        return false;
+        return true;
     }
 
     public boolean supportsMultipleTransactions() throws SQLException {

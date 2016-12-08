@@ -11,7 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * ResultSet that gets the dat from a double dimension array
+ * ResultSet that gets the data from a double dimension array
  */
 public class ArrayResultSet implements ResultSet {
     Object[][] data;
@@ -202,8 +202,14 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public ResultSetMetaData getMetaData() throws SQLException {
+
         String[] names = this.names.keySet().toArray(new String[]{});
-        return new ArrayRsMetada(this.data, names);
+
+        int[] types = new int[names.length];
+        for(int i = 0; i < names.length ; i ++ ){
+            types[i] = RsMetaData.objToType(data[0][i]);
+        }
+        return new RsMetaData(names, types);
     }
 
     public Object getObject(int columnIndex) throws SQLException {

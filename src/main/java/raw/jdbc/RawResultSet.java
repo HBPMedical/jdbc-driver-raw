@@ -44,7 +44,7 @@ public class RawResultSet implements ResultSet {
                     columnNames = map.keySet().toArray(new String[]{});
                 } else {
                     this.isRecord = false;
-                    columnNames = new String[]{"0"};
+                    columnNames = new String[]{SINGLE_ELEM_LABEL};
                 }
             }
             logger.fine("initialized query token: " + query.token + " hasMore: " + query.hasMore);
@@ -358,7 +358,25 @@ public class RawResultSet implements ResultSet {
     }
 
     public ResultSetMetaData getMetaData() throws SQLException {
-        return new RawRsMetadata(query.data);
+        //TODO: Handle nulls (try to check next element)
+        if (query.data.length > 0) {
+            Object obj = query.data[0];
+            int[] types;
+            if (isRecord) {
+                Map<String, Object> map = (Map) obj;
+                types = new int[columnNames.length];
+                for (int i = 0; i < columnNames.length; i++) {
+                    types[i] = RsMetaData.objToType(map.get(columnNames[i]));
+                }
+            } else {
+                columnNames = new String[]{RawResultSet.SINGLE_ELEM_LABEL};
+                types = new int[]{RsMetaData.objToType(obj)};
+            }
+            return new RsMetaData(columnNames, types);
+        } else {
+            throw new SQLException("cannot get metadata for empty array");
+        }
+
     }
 
     public Object getObject(int columnIndex) throws SQLException {
