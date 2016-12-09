@@ -101,6 +101,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
             return Types.STRUCT;
         } else if (obj.getClass() == ArrayList.class) {
             return Types.ARRAY;
+        } else if (obj.getClass().isArray()) {
+            return Types.ARRAY;
         } else {
             throw new SQLException("Unsupported type " + obj.getClass());
         }

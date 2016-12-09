@@ -18,7 +18,7 @@ public class ArrayResultSet implements ResultSet {
 
     int index = -1;
 
-    ArrayResultSet(Object[][] data, String columnNames[]) {
+    public ArrayResultSet(Object[][] data, String columnNames[]) {
         this.names = new LinkedHashMap<String, Integer>();
         for (int i = 0; i < columnNames.length; i++) {
             this.names.put(columnNames[i], i);

@@ -67,7 +67,6 @@ public class RsMetaData implements ResultSetMetaData {
         if (column < 1 || column > columnNames.length) {
             throw new SQLException("index out of bounds " + column);
         }
-        System.out.println("column: " + column + " name: " + columnNames[column - 1]);
         return columnNames[column - 1];
     }
 
@@ -95,7 +94,6 @@ public class RsMetaData implements ResultSetMetaData {
         if (column < 1 || column > types.length) {
             throw new SQLException("index out of bounds " + column);
         }
-        System.out.println("column: " + column + " type: " + types[column - 1]);
         return types[column - 1];
     }
 

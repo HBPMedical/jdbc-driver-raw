@@ -1,4 +1,5 @@
 import org.junit.Test;
+import raw.jdbc.ArrayResultSet;
 import raw.jdbc.RawDatabaseMetaData;
 import raw.jdbc.RawResultSet;
 import raw.jdbc.RsMetaData;
@@ -38,7 +39,7 @@ public class TestMetadata extends TestQueries {
         };
         ResultSet rs = statement.executeQuery(objToQuery(records));
         RsMetaData md = (RsMetaData) rs.getMetaData();
-        assert(md.getColumnCount() == 6);
+        assert (md.getColumnCount() == 6);
         logger.fine("col 1: type: " + md.getColumnType(1));
 
         assert (md.getColumnType(1) == Types.VARCHAR);
@@ -76,8 +77,41 @@ public class TestMetadata extends TestQueries {
         RawDatabaseMetaData md = (RawDatabaseMetaData) conn.getMetaData();
 
         ResultSet rs = md.getSchemas();
-        while(rs.next()) {
+        while (rs.next()) {
             logger.fine("Schema: " + rs.getString(1) + " catalog: " + rs.getString(2));
         }
     }
+
+    @Test
+    public void testArrayResultSet() throws SQLException {
+        Object[][] data = new Object[][]{
+                {"hello", 1, 1.1, 1000001L},
+                {"world", 2, 1.2, 1000002L},
+                {"again", 3, 1.3, 1000003L},
+                {"more", 4, 1.4, 1000004L}
+        };
+
+        String[] fields = new String[]{"_string", "_int", "_double", "_long"};
+        ResultSet rs = new ArrayResultSet(data, fields);
+
+        for (int i = 0; i < data.length; i++) {
+            rs.next();
+            for (int j = 0; j < data[i].length; j++) {
+                assert(rs.getObject(j+1).equals(data[i][j]));
+            }
+
+            assert(rs.getString(1).equals(data[i][0]));
+            assert(rs.getInt(2) == (Integer) data[i][1]);
+            assert(rs.getDouble(3) == (Double) data[i][2]);
+            assert(rs.getLong(4) == (Long) data[i][3]);
+        }
+
+        ResultSetMetaData md = rs.getMetaData();
+        int[] types = new int[]{Types.VARCHAR, Types.INTEGER, Types.DOUBLE, Types.BIGINT};
+        for (int i=0; i < md.getColumnCount() ; i++) {
+            assert(md.getColumnType(i+1) == types[i]);
+            assert(md.getColumnName(i+1).equals(fields[i]));
+        }
+    }
+
 }
