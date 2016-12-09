@@ -17,52 +17,11 @@ public class RsMetaData implements ResultSetMetaData {
     RsMetaData(String[] names, int[] types) throws SQLException {
         this.columnNames = names;
         this.types = types;
-
-    }
-
-    static public int objToType(Object obj) throws SQLException {
-        if (obj == null){
-            return Types.NULL;
-        }else if (obj.getClass() == Integer.class) {
-            return Types.INTEGER;
-        } else if (obj.getClass() == Long.class) {
-            return Types.BIGINT;
-        } else if (obj.getClass() == String.class) {
-            return Types.VARCHAR;
-        } else if (obj.getClass() == Double.class) {
-            return Types.DOUBLE;
-        } else if (obj.getClass() == Boolean.class) {
-            return Types.BOOLEAN;
-        } else if (obj.getClass() == LinkedHashMap.class) {
-            return Types.STRUCT;
-        } else if (obj.getClass() == ArrayList.class) {
-            return Types.ARRAY;
-        } else {
-            throw new SQLException("Unsupported type " + obj.getClass());
-        }
     }
 
     public String getColumnTypeName(int column) throws SQLException {
         int type = getColumnType(column);
-        switch (type) {
-            case Types.INTEGER:
-                return "int";
-            case Types.BIGINT:
-                return "long";
-            case Types.VARCHAR:
-                return "string";
-            case Types.DOUBLE:
-                return "double";
-            case Types.STRUCT:
-                return "record";
-            case Types.ARRAY:
-                return "collection";
-            case Types.BOOLEAN:
-                return "boolean";
-            default:
-                return "unknow type";
-        }
-
+        return RawDatabaseMetaData.typeToName(type);
     }
 
     public int getColumnCount() throws SQLException {
@@ -86,7 +45,7 @@ public class RsMetaData implements ResultSetMetaData {
     }
 
     public int isNullable(int column) throws SQLException {
-        return 0;
+        return columnNoNulls;
     }
 
     public boolean isSigned(int column) throws SQLException {
@@ -94,14 +53,21 @@ public class RsMetaData implements ResultSetMetaData {
     }
 
     public int getColumnDisplaySize(int column) throws SQLException {
-        return 0;
+        return 100;
     }
 
     public String getColumnLabel(int column) throws SQLException {
+        if (column < 1 || column > columnNames.length) {
+            throw new SQLException("index out of bounds " + column);
+        }
         return columnNames[column - 1];
     }
 
     public String getColumnName(int column) throws SQLException {
+        if (column < 1 || column > columnNames.length) {
+            throw new SQLException("index out of bounds " + column);
+        }
+        System.out.println("column: " + column + " name: " + columnNames[column - 1]);
         return columnNames[column - 1];
     }
 
@@ -110,22 +76,26 @@ public class RsMetaData implements ResultSetMetaData {
     }
 
     public int getPrecision(int column) throws SQLException {
-        return 0;
+        return 1;
     }
 
     public int getScale(int column) throws SQLException {
-        return 0;
+        return 1;
     }
 
     public String getTableName(int column) throws SQLException {
-        return "unknown";
+        return null;
     }
 
     public String getCatalogName(int column) throws SQLException {
-        return "unknown";
+        return null;
     }
 
     public int getColumnType(int column) throws SQLException {
+        if (column < 1 || column > types.length) {
+            throw new SQLException("index out of bounds " + column);
+        }
+        System.out.println("column: " + column + " type: " + types[column - 1]);
         return types[column - 1];
     }
 

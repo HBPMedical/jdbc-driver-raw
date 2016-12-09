@@ -1,7 +1,6 @@
 package raw.jdbc;
 
 import java.io.InputStream;
-import java.io.ObjectInput;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
@@ -207,7 +206,7 @@ public class ArrayResultSet implements ResultSet {
 
         int[] types = new int[names.length];
         for(int i = 0; i < names.length ; i ++ ){
-            types[i] = RsMetaData.objToType(data[0][i]);
+            types[i] = RawDatabaseMetaData.objToType(data[0][i]);
         }
         return new RsMetaData(names, types);
     }

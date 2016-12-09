@@ -139,7 +139,6 @@ public class RawResultSet implements ResultSet {
             return castToType(ary.get(idx), tClass);
         } else if (idx != 0) {
             throw new IndexOutOfBoundsException("Row is not record or collection to get column index > 1");
-
         } else {
             return castToType(obj, tClass);
         }
@@ -366,11 +365,11 @@ public class RawResultSet implements ResultSet {
             if (isRecord) {
                 Map map = (LinkedHashMap<String, Object>) query.data[0];
                 for (int i = 0; i < columnNames.length; i++) {
-                    int t = RsMetaData.objToType(map.get(columnNames[i]));
+                    int t = RawDatabaseMetaData.objToType(map.get(columnNames[i]));
                     types[i] = t;
                 }
             } else {
-                types[0] = RsMetaData.objToType(query.data[0]);
+                types[0] = RawDatabaseMetaData.objToType(query.data[0]);
             }
             return new RsMetaData(columnNames, types);
         } else {

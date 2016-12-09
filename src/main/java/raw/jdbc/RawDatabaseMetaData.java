@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 
 public class RawDatabaseMetaData implements DatabaseMetaData {
 
@@ -27,6 +28,86 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         } catch (IOException e) {
             throw new SQLException("could not get schema info " + e.getMessage());
         }
+    }
+
+    public static String typeToName(int type) {
+        switch (type) {
+            case Types.INTEGER:
+                return "int";
+            case Types.BIGINT:
+                return "long";
+            case Types.VARCHAR:
+                return "string";
+            case Types.DOUBLE:
+                return "double";
+            case Types.STRUCT:
+                return "record";
+            case Types.ARRAY:
+                return "collection";
+            case Types.BOOLEAN:
+                return "boolean";
+            default:
+                return "unknow type";
+        }
+    }
+
+    public static int nameToType(String name) throws SQLException {
+        if (name == "int") {
+            return Types.INTEGER;
+        } else if (name == "long") {
+            return Types.BIGINT;
+        } else if (name == "string") {
+            return Types.VARCHAR;
+        } else if (name == "double") {
+            return Types.DOUBLE;
+        } else if (name == "float") {
+            return Types.FLOAT;
+        } else if (name == "date") {
+            return Types.DATE;
+        } else if (name == "date") {
+            return Types.DATE;
+        } else if (name == "datetime") {
+            return Types.TIME;
+        } else if (name == "boolean") {
+            return Types.BOOLEAN;
+        } else if (name.startsWith("collection")) {
+            return Types.ARRAY;
+        } else if (name.startsWith("record")) {
+            return Types.STRUCT;
+            //TODO: check what we should inform with optionTypes
+        } else if (name.startsWith("option")) {
+            // removes "option(" and the last ")"
+            String newName = name.substring(7, name.length() - 1);
+            return nameToType(newName);
+        } else {
+            throw new SQLException("Unknown type " + name);
+        }
+    }
+
+    public static int objToType(Object obj) throws SQLException {
+        if (obj == null) {
+            return Types.NULL;
+        } else if (obj.getClass() == Integer.class) {
+            return Types.INTEGER;
+        } else if (obj.getClass() == Long.class) {
+            return Types.BIGINT;
+        } else if (obj.getClass() == String.class) {
+            return Types.VARCHAR;
+        } else if (obj.getClass() == Double.class) {
+            return Types.DOUBLE;
+        } else if (obj.getClass() == Boolean.class) {
+            return Types.BOOLEAN;
+        } else if (obj.getClass() == LinkedHashMap.class) {
+            return Types.STRUCT;
+        } else if (obj.getClass() == ArrayList.class) {
+            return Types.ARRAY;
+        } else {
+            throw new SQLException("Unsupported type " + obj.getClass());
+        }
+    }
+
+    public static boolean isNullable(String type) {
+        return type.startsWith("option");
     }
 
     public boolean allProceduresAreCallable() throws SQLException {
@@ -527,7 +608,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
-        return new ArrayResultSet(new Object[][]{}, new String[]{});
+        throw new SQLFeatureNotSupportedException("not implemented getProcedures");
     }
 
     public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException {
@@ -593,53 +674,98 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
 
         String[] fields = new String[]{
-                "TABLE_CAT", // String
-                "TABLE_SCHEM", // String
-                "TABLE_NAME", // String
-                "COLUMN_NAME", // String
-                "DATA_TYPE", // int
-                "TYPE_NAME", // String
-                "COLUMN_SIZE", // int
+                "TABLE_CAT", //(String)  table catalog (may be null)
+                "TABLE_SCHEM", //(String)  table schema (may be null)
+                "TABLE_NAME", //(String)  table name
+                "COLUMN_NAME", //(String)  column name
+                "DATA_TYPE", //(int)  SQL type from java.sql.Types
+                "TYPE_NAME", //(String)  Data source dependent type name, for a UDT the type name is fully qualified
+                "COLUMN_SIZE", //(int)  column size.
                 "BUFFER_LENGTH", // is not used.
-                "DECIMAL_DIGITS", // int
-                "NUM_PREC_RADIX", // int
-                "NULLABLE", // int
-                "REMARKS", // String
-                "COLUMN_DEF", // String
-                "SQL_DATA_TYPE", // int
-                "SQL_DATETIME_SUB", // int
-                "CHAR_OCTET_LENGTH", // int
-                "ORDINAL_POSITION", // int
-                "IS_NULLABLE", // String
-                "SCOPE_CATALOG", // String
-                "SCOPE_SCHEMA", // String
-                "SCOPE_TABLE", // String
-                "SOURCE_DATA_TYPE", // short
-                "IS_AUTOINCREMENT", // String
-                "IS_GENERATEDCOLUMN", // String
+                "DECIMAL_DIGITS", //(int)  the number of fractional digits. Null is returned for data types where DECIMAL_DIGITS is not applicable.
+                "NUM_PREC_RADIX", //(int)  Radix (typically either 10 or 2)
+                "NULLABLE", //(int)  is NULL allowed.
+                //columnNoNulls - might not allow NULL values
+                //columnNullable - definitely allows NULL values
+                //columnNullableUnknown - nullability unknown
+                "REMARKS", //(String)  comment describing column (may be null)
+                "COLUMN_DEF", //(String)  default value for the column, which should be interpreted as a string when the value is enclosed in single quotes (may be null)
+                "SQL_DATA_TYPE", //(int)  unused
+                "SQL_DATETIME_SUB", //(int)  unused
+                "CHAR_OCTET_LENGTH", //(int)  for char types the maximum number of bytes in the column
+                "ORDINAL_POSITION", //(int)  index of column in table (starting at 1)
+                "IS_NULLABLE", //(String)  ISO rules are used to determine the nullability for a column.
+                //YES-- - if the column can include NULLs
+                //NO-- - if the column cannot include NULLs
+                //empty string --- if the nullability for the column is unknown
+                "SCOPE_CATALOG", //(String)  catalog of table that is the scope of a reference attribute (null if DATA_TYPE isn't REF)
+                "SCOPE_SCHEMA", //(String)  schema of table that is the scope of a reference attribute (null if the DATA_TYPE isn't REF)
+                "SCOPE_TABLE", //(String)  table name that this the scope of a reference attribute (null if the DATA_TYPE isn't REF)
+                "SOURCE_DATA_TYPE", //(short)  source type of a distinct type or user-generated Ref type, SQL type from java.sql.Types (null if DATA_TYPE isn't DISTINCT or user-generated REF)
+                "IS_AUTOINCREMENT", //(String)  Indicates whether this column is auto incremented
+                //YES-- - if the column is auto incremented
+                //NO-- - if the column is not auto incremented
+                //empty string --- if it cannot be determined whether the column is auto incremented
+                "IS_GENERATEDCOLUMN", //(String)  Indicates whether this is a generated column
+                //YES-- - if this a generated column
+                //NO-- - if this not a generated column
+                //empty string --- if it cannot be determined whether this is a generated column
         };
 
         SchemaInfo[] matches = findTable(catalog, schemaPattern, tableNamePattern, null);
-        //TODO: implement this
+
         ArrayList<Object[]> data = new ArrayList<Object[]>();
         for (SchemaInfo info : matches) {
-            for (SchemaInfoColumn col : info.columns){
+            for (int i = 0; i < info.columns.length; i++) {
+                SchemaInfoColumn col = info.columns[i];
                 Object[] obj = new Object[]{
                         user,
                         user,
                         info.name,
-                        
+                        col.name,
+                        nameToType(col.tipe),
+                        col.tipe,
+                        100000, // to review
+                        0,      // to review
+                        3,      // to review DECIMAL_DIGITS
+                        10,
+                        isNullable(col.tipe) ? columnNullable : columnNoNulls,
+                        "info got from rest service",
+                        null,
+                        0,
+                        0,
+                        1000000,
+                        i + 1,
+                        isNullable(col.tipe) ? "YES" : "NO",
+                        null,
+                        null,
+                        null,
+                        null,
+                        "NO",
+                        "NO"
                 };
+                data.add(obj);
             }
         }
-        return new ArrayResultSet(data, fields);
+        return new ArrayResultSet(data.toArray(new Object[][]{}), fields);
     }
 
     public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
         //TODO: implement this
         Object[][] data = new Object[][]{};
-        String[] fields = new String[]{};
-        return new ArrayResultSet(data, fields);
+        String[] fields = new String[]{
+                "TABLE_CAT", //(String)  table catalog (may be null)
+                "TABLE_SCHEM", //(String)  table schema (may be null)
+                "TABLE_NAME", //(String)  table name
+                "COLUMN_NAME", //(String)  column name
+                "GRANTOR", //(String)  grantor of access (may be null)
+                "GRANTEE", //(String)  grantee of access
+                "PRIVILEGE", //(String)  name of access (SELECT, INSERT, UPDATE, REFRENCES, ...)
+                "IS_GRANTABLE" //(String)  "YES" if grantee is permitted to grant to others; "NO" if not; null if unknown
+        };
+
+        throw new SQLFeatureNotSupportedException("not implemented getColumnPrivileges");
+        //return new ArrayResultSet(data, fields);
     }
 
     public ResultSet getTablePrivileges(String catalog, String schemaPattern, String tableNamePattern) throws SQLException {
@@ -672,24 +798,30 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     public ResultSet getTypeInfo() throws SQLException {
         String[] fields = new String[]{
-                "TYPE_NAME",
-                "DATA_TYPE",
-                "PRECISION",
-                "LITERAL_PREFIX",
-                "LITERAL_SUFFIX",
-                "CREATE_PARAMS",
-                "NULLABLE",
-                "CASE_SENSITIVE",
-                "SEARCHABLE",
-                "UNSIGNED_ATTRIBUTE",
-                "FIXED_PREC_SCALE",
-                "AUTO_INCREMENT",
-                "LOCAL_TYPE_NAME",
-                "MINIMUM_SCALE",
-                "MAXIMUM_SCALE",
-                "SQL_DATA_TYPE",
-                "SQL_DATETIME_SUB",
-                "NUM_PREC_RADIX"
+                "TYPE_NAME", //(String)  Type name
+                "DATA_TYPE", //(int)  SQL data type from java.sql.Types
+                "PRECISION", //(int)  maximum precision
+                "LITERAL_PREFIX", //(String)  prefix used to quote a literal (may be null)
+                "LITERAL_SUFFIX", //(String)  suffix used to quote a literal (may be null)
+                "CREATE_PARAMS", //(String)  parameters used in creating the type (may be null)
+                "NULLABLE", //(short)  can you use NULL for this type.   typeNoNulls - does not allow NULL values
+                // typeNullable - allows NULL values
+                // typeNullableUnknown - nullability unknown
+                "CASE_SENSITIVE", //(boolean)  is it case sensitive.
+                "SEARCHABLE", //(short)  can you use "WHERE" based on this type:
+                // typePredNone - No support
+                //typePredChar - Only supported with WHERE .. LIKE
+                // typePredBasic - Supported except for WHERE .. LIKE
+                //typeSearchable - Supported for all WHERE ..
+                "UNSIGNED_ATTRIBUTE", //(boolean)  is it unsigned.
+                "FIXED_PREC_SCALE", //(boolean)  can it be a money value.
+                "AUTO_INCREMENT", //(boolean)  can it be used for an auto-increment value.
+                "LOCAL_TYPE_NAME", //(String)  localized version of type name (may be null)
+                "MINIMUM_SCALE", //(short)  minimum scale supported
+                "MAXIMUM_SCALE", //(short)  maximum scale supported
+                "SQL_DATA_TYPE", //(int)  unused
+                "SQL_DATETIME_SUB", //(int)  unused
+                "NUM_PREC_RADIX", //(int)  usually 2 or 10
         };
         Object[][] data = new Object[][]{
                 {"int", Types.INTEGER, 0Xffffffff, null, null, null, typeNullable, true, typeSearchable, false, false, false, "int", 0, 0, Types.INTEGER, 0, 10},
@@ -756,7 +888,21 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getUDTs(String catalog, String schemaPattern, String typeNamePattern, int[] types) throws SQLException {
+        //TODO: check if we have a way of getting the user defined types
+        String[] fields = new String[]{
+                "TYPE_CAT", //(String)  the type's catalog (may be null)
+                "TYPE_SCHEM", //(String)  type's schema (may be null)
+                "TYPE_NAME", //(String)  type name
+                "CLASS_NAME", //(String)  Java class name
+                "DATA_TYPE", //(int)  type value defined in java.sql.Types. One of JAVA_OBJECT, STRUCT, or DISTINCT
+                "REMARKS", //(String)  explanatory comment on the type
+                "BASE_TYPE" //(short)  type code of the source type of a DISTINCT type or the type that implements the user-generated reference type of the SELF_REFERENCING_COLUMN of a structured type as defined in java.sql.Types (null if DATA_TYPE is not DISTINCT or not STRUCT with REFERENCE_GENERATION = USER_DEFINED)
+        };
+
+        // for now we are returning an empty recordset
+        Object[][] data = new Object[][]{};
         throw new UnsupportedOperationException("not implemented getUDTs");
+        //return new ArrayResultSet(data, fields);
     }
 
     public Connection getConnection() throws SQLException {

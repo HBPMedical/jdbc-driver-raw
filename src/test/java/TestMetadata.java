@@ -54,6 +54,13 @@ public class TestMetadata extends TestQueries {
         assert (md.getColumnName(4).equals("_double"));
         assert (md.getColumnName(5).equals("_float"));
         assert (md.getColumnName(6).equals("_array"));
+
+        assert (md.getColumnLabel(1).equals("_string"));
+        assert (md.getColumnLabel(2).equals("_int"));
+        assert (md.getColumnLabel(3).equals("_long"));
+        assert (md.getColumnLabel(4).equals("_double"));
+        assert (md.getColumnLabel(5).equals("_float"));
+        assert (md.getColumnLabel(6).equals("_array"));
     }
 
     @Test
@@ -72,7 +79,5 @@ public class TestMetadata extends TestQueries {
         while(rs.next()) {
             logger.fine("Schema: " + rs.getString(1) + " catalog: " + rs.getString(2));
         }
-
-
     }
 }

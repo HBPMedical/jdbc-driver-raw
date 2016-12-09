@@ -77,6 +77,7 @@ public class TestQueries extends RawTest {
                 assert (rs.getString(j+1).equals(table[i][j]));
             }
         }
+        assert(!rs.next());
     }
 
     @Test
