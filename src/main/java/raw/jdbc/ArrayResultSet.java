@@ -15,15 +15,31 @@ import java.util.Map;
 public class ArrayResultSet implements ResultSet {
     Object[][] data;
     Map<String, Integer> names;
+    int[] types;
 
     int index = -1;
 
-    public ArrayResultSet(Object[][] data, String columnNames[]) {
-        this.names = new LinkedHashMap<String, Integer>();
-        for (int i = 0; i < columnNames.length; i++) {
-            this.names.put(columnNames[i], i);
-        }
+    public ArrayResultSet(Object[][] data, String[] columnNames) throws SQLException {
         this.data = data;
+        this.names = getNames(columnNames);
+        types = new int[columnNames.length];
+        for(int i = 0; i < columnNames.length ; i ++ ){
+            types[i] = RawDatabaseMetaData.objToType(data[0][i]);
+        }
+    }
+
+    public ArrayResultSet(Object[][] data, String columnNames[], int[] types) throws SQLException {
+        this.data = data;
+        this.names = getNames(columnNames);
+        this.types = types;
+    }
+
+    private static LinkedHashMap<String, Integer> getNames(String[] columnNames){
+        LinkedHashMap<String, Integer> out = new LinkedHashMap<String, Integer>();
+        for (int i = 0; i < columnNames.length; i++) {
+            out.put(columnNames[i], i);
+        }
+        return out;
     }
 
     private <T> T getType(int columnIndex, Class<T> tClass) throws SQLException {
@@ -203,12 +219,7 @@ public class ArrayResultSet implements ResultSet {
     public ResultSetMetaData getMetaData() throws SQLException {
 
         String[] names = this.names.keySet().toArray(new String[]{});
-
-        int[] types = new int[names.length];
-        for(int i = 0; i < names.length ; i ++ ){
-            types[i] = RawDatabaseMetaData.objToType(data[0][i]);
-        }
-        return new RsMetaData(names, types);
+        return new RsMetaData(names, this.types);
     }
 
     public Object getObject(int columnIndex) throws SQLException {

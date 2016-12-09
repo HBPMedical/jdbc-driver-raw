@@ -86,7 +86,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     public static int objToType(Object obj) throws SQLException {
         if (obj == null) {
-            return Types.NULL;
+            //return Types.NULL;
+            return Types.VARCHAR;
         } else if (obj.getClass() == Integer.class) {
             return Types.INTEGER;
         } else if (obj.getClass() == Long.class) {
@@ -669,8 +670,9 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getTableTypes() throws SQLException {
-        String[][] tables = new String[][]{{"TABLE"}, {"VIEW"}};
-        return new ArrayResultSet(tables, new String[]{"source", "view"});
+        String[][] data = new String[][]{{"TABLE"}, {"VIEW"}};
+        String[] fields= new String[]{"TABLE_TYPE "};
+        return new ArrayResultSet(data, fields);
     }
 
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
@@ -749,6 +751,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
                 data.add(obj);
             }
         }
+
+
         return new ArrayResultSet(data.toArray(new Object[][]{}), fields);
     }
 
