@@ -2,10 +2,8 @@ package raw.jdbc;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
-import raw.jdbc.rawclient.requests.TokenResponse;
-import raw.jdbc.rawclient.requests.PasswordTokenRequest;
 import raw.jdbc.rawclient.RawRestClient;
-
+import raw.jdbc.rawclient.requests.PasswordTokenRequest;
 
 import java.io.IOException;
 import java.net.*;
@@ -111,7 +109,6 @@ public class RawDriver implements Driver {
     private static Properties parseProperties(String url, Properties info) throws SQLException {
         //Parses url parameters into a Map
         Properties urlParams = parseUrl(url);
-
         Properties finalInfo = new Properties();
         finalInfo.setProperty(AUTH_PROPERTY, AUTH_SERVER_URL);
 
