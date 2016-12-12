@@ -142,7 +142,7 @@ public class RawRestClient {
         if (code != HTTP_OK) {
             String content = EntityUtils.toString(response.getEntity());
             logger.warning("Request to " + path + "failed code: " + code + " response: " + content);
-            throw new IOException("json post request to " + path + "failed with code " + code);
+            throw new IOException("json post request to " + path + " failed with code " + code);
         }
         return getObjFromResponse(response, responseClass);
     }

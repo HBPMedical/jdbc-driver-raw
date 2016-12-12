@@ -115,4 +115,15 @@ public class TestMetadata extends TestQueries {
             assert (md.getColumnName(i + 1).equals(fields[i]));
         }
     }
+
+    @Test
+    public void getTableMetadata() throws SQLException {
+        RawDatabaseMetaData md = (RawDatabaseMetaData) conn.getMetaData();
+
+        ResultSet rs = md.getTables(null, null, "",null);
+
+        while(rs.next()){
+            logger.fine("table " + rs.getString(3));
+        }
+    }
 }

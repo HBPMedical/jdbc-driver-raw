@@ -22,9 +22,13 @@ public class ArrayResultSet implements ResultSet {
     public ArrayResultSet(Object[][] data, String[] columnNames) throws SQLException {
         this.data = data;
         this.names = getNames(columnNames);
-        types = new int[columnNames.length];
-        for(int i = 0; i < columnNames.length ; i ++ ){
-            types[i] = RawDatabaseMetaData.objToType(data[0][i]);
+        this.types = new int[columnNames.length];
+        if(data.length > 0 ) {
+            for (int i = 0; i < columnNames.length; i++) {
+                types[i] = RawDatabaseMetaData.objToType(data[0][i]);
+            }
+        } else {
+            throw new SQLException("Could not guess type of empty object");
         }
     }
 
@@ -32,6 +36,16 @@ public class ArrayResultSet implements ResultSet {
         this.data = data;
         this.names = getNames(columnNames);
         this.types = types;
+
+    }
+
+    public ArrayResultSet(Object[][] data, String columnNames[], Object[] objects) throws SQLException {
+        this.data = data;
+        this.names = getNames(columnNames);
+        types = new int[columnNames.length];
+        for (int i = 0; i < columnNames.length; i++) {
+            types[i] = RawDatabaseMetaData.objToType(objects[i]);
+        }
     }
 
     private static LinkedHashMap<String, Integer> getNames(String[] columnNames){

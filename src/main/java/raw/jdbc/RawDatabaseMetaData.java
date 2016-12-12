@@ -9,6 +9,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class RawDatabaseMetaData implements DatabaseMetaData {
 
@@ -17,6 +19,8 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     RawRestClient client;
     Connection connecion;
     SchemaInfo[] schemas;
+
+    Logger logger = Logger.getLogger(RawDatabaseMetaData.class.getName());
 
     RawDatabaseMetaData(String url, String user, RawRestClient client, Connection connection) throws SQLException {
         this.url = url;
@@ -52,23 +56,23 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public static int nameToType(String name) throws SQLException {
-        if (name == "int") {
+        if (name.equals("int")) {
             return Types.INTEGER;
-        } else if (name == "long") {
+        } else if (name.equals("long")) {
             return Types.BIGINT;
-        } else if (name == "string") {
+        } else if (name.equals("string")) {
             return Types.VARCHAR;
-        } else if (name == "double") {
+        } else if (name.equals("double")) {
             return Types.DOUBLE;
-        } else if (name == "float") {
+        } else if (name.equals("float")) {
             return Types.FLOAT;
-        } else if (name == "date") {
+        } else if (name.equals("date")) {
             return Types.DATE;
-        } else if (name == "date") {
+        } else if (name.equals("date")) {
             return Types.DATE;
-        } else if (name == "datetime") {
+        } else if (name.equals("datetime")) {
             return Types.TIME;
-        } else if (name == "boolean") {
+        } else if (name.equals("boolean")) {
             return Types.BOOLEAN;
         } else if (name.startsWith("collection")) {
             return Types.ARRAY;
@@ -613,7 +617,36 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getProcedures(String catalog, String schemaPattern, String procedureNamePattern) throws SQLException {
-        throw new SQLFeatureNotSupportedException("not implemented getProcedures");
+
+        String[] columns = new String[]{
+                "PROCEDURE_CAT", // String = > procedure catalog(may be null)
+                "PROCEDURE_SCHEM", // String =>procedure schema (may be null)
+                "PROCEDURE_NAME", // String =>procedure name
+                "reserved", // for future use
+                "reserved", // for future use
+                "reserved", // for future use
+                "REMARKS", // String =>explanatory comment on the procedure
+                "PROCEDURE_TYPE", // short =>kind of procedure:
+                "procedureResultUnknown", // - Cannot determine if a return value will be returned
+                "procedureNoResult", // - Does not return a return value
+                "procedureReturnsResult", // - Returns a return value
+                "SPECIFIC_NAME", // String =>The name which uniquely identifies this procedure within its schema.
+        };
+        int[] types = new int[]{
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.VARCHAR
+        };
+        return new ArrayResultSet(new Object[][]{}, columns, types);
     }
 
     public ResultSet getProcedureColumns(String catalog, String schemaPattern, String procedureNamePattern, String columnNamePattern) throws SQLException {
@@ -623,7 +656,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     SchemaInfo[] findTable(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
         ArrayList<SchemaInfo> out = new ArrayList<SchemaInfo>();
         for (SchemaInfo info : schemas) {
-            if (info.name == tableNamePattern) {
+            if (stringMatch(info.name, tableNamePattern)) {
                 if (types == null) {
                     out.add(info);
                 } else if (Arrays.asList(types).contains(info.schemaType)) {
@@ -634,9 +667,17 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         return out.toArray(new SchemaInfo[]{});
     }
 
+    public static boolean stringMatch(String value, String pattern) {
+        if (pattern != null) {
+            String regex = pattern.replaceAll("%", ".*");
+            return Pattern.matches(regex, value);
+        } else {
+            return true;
+        }
+    }
+
     public ResultSet getTables(String catalog, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
         //TODO: Make the search work, check the difference for us between schema and table
-
         String[] columnNames = new String[]{
                 "TABLE_CAT",
                 "TABLE_SCHEM",
@@ -657,7 +698,9 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
                     user, matches[i].name, matches[i].name, matches[i].schemaType, "user table",
                     null, null, null, null, null};
         }
-        return new ArrayResultSet(data, columnNames);
+        int[] mdTypes = new int[]{Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
+                Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR};
+        return new ArrayResultSet(data, columnNames, mdTypes);
     }
 
     public ResultSet getSchemas() throws SQLException {
@@ -672,9 +715,19 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getTableTypes() throws SQLException {
-        String[][] data = new String[][]{{"TABLE"}, {"VIEW"}};
-        String[] fields= new String[]{"TABLE_TYPE "};
+        String[][] data = new String[][]{{"source"}, {"view"}};
+        String[] fields = new String[]{"TABLE_TYPE "};
         return new ArrayResultSet(data, fields);
+    }
+
+    static private int type2ColumnSize(String type) {
+        if (type.equals("string")) {
+            return 20;
+        } else if (type.startsWith("collection") || type.startsWith("record")) {
+            return 100;
+        } else {
+            return 5;
+        }
     }
 
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
@@ -722,40 +775,68 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
         ArrayList<Object[]> data = new ArrayList<Object[]>();
         for (SchemaInfo info : matches) {
+
             for (int i = 0; i < info.columns.length; i++) {
                 SchemaInfoColumn col = info.columns[i];
-                Object[] obj = new Object[]{
-                        user,
-                        user,
-                        info.name,
-                        col.name,
-                        nameToType(col.tipe),
-                        col.tipe,
-                        100000, // to review
-                        0,      // to review
-                        3,      // to review DECIMAL_DIGITS
-                        10,
-                        isNullable(col.tipe) ? columnNullable : columnNoNulls,
-                        "info got from rest service",
-                        null,
-                        0,
-                        0,
-                        1000000,
-                        i + 1,
-                        isNullable(col.tipe) ? "YES" : "NO",
-                        null,
-                        null,
-                        null,
-                        null,
-                        "NO",
-                        "NO"
-                };
-                data.add(obj);
+                if (stringMatch(col.name, columnNamePattern)) {
+                    Object[] obj = new Object[]{
+                            user,
+                            user,
+                            info.name,
+                            col.name,
+                            nameToType(col.tipe),
+                            col.tipe,
+                            type2ColumnSize(col.tipe), // to review
+                            0,      // to review
+                            3,      // to review DECIMAL_DIGITS
+                            10,
+                            isNullable(col.tipe) ? columnNullable : columnNoNulls,
+                            "info got from rest service",
+                            null,
+                            0,
+                            0,
+                            1000000,
+                            i + 1,
+                            isNullable(col.tipe) ? "YES" : "NO",
+                            null,
+                            null,
+                            null,
+                            null,
+                            "NO",
+                            "NO"
+                    };
+                    data.add(obj);
+                }
             }
         }
 
-
-        return new ArrayResultSet(data.toArray(new Object[][]{}), fields);
+        int[] objTypes = new int[]{
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.INTEGER,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR,
+                Types.VARCHAR
+        };
+        return new ArrayResultSet(data.toArray(new Object[][]{}), fields, objTypes);
     }
 
     public ResultSet getColumnPrivileges(String catalog, String schema, String table, String columnNamePattern) throws SQLException {
@@ -914,7 +995,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public Connection getConnection() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getConnection");
+        return this.connecion;
     }
 
     public boolean supportsSavepoints() throws SQLException {
@@ -962,11 +1043,14 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public int getJDBCMajorVersion() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getJDBCMajorVersion");
+        //JDBC 4.2, is specified by a maintenance release 2 of JSR 221 and is included in Java SE 8.
+        //TODO: Confirm if this is correct
+        return 4;
     }
 
     public int getJDBCMinorVersion() throws SQLException {
-        throw new UnsupportedOperationException("not implemented getJDBCMinorVersion");
+        //TODO: Confirm if this is correct
+        return 2;
     }
 
     public int getSQLStateType() throws SQLException {
