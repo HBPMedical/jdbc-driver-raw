@@ -307,7 +307,9 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public boolean supportsMultipleResultSets() throws SQLException {
-        return true;
+        //This option was creating problems with squirrel sql,
+        // check where in the implementation we are failing
+        return false;
     }
 
     public boolean supportsMultipleTransactions() throws SQLException {
