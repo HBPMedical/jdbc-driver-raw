@@ -6,6 +6,7 @@ import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.PasswordTokenRequest;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.sql.*;
 import java.util.List;
@@ -82,8 +83,8 @@ public class RawDriver implements Driver {
                 int idx = userinfo.indexOf(':');
                 String username;
                 if (idx > 0) {
-                    username = URLDecoder.decode(userinfo.substring(0, idx));
-                    String password = URLDecoder.decode(userinfo.substring(idx + 1));
+                    username = URLDecoder.decode(userinfo.substring(0, idx),"UTF-8");
+                    String password = URLDecoder.decode(userinfo.substring(idx + 1), "UTF-8");
                     properties.setProperty(PASSWD_PROPERTY, password);
                 } else {
                     username = uri.getUserInfo();
@@ -91,8 +92,8 @@ public class RawDriver implements Driver {
                 properties.setProperty(USER_PROPERTY, username);
             }
             return properties;
-        } catch (MalformedURLException e) {
-            throw new SQLException("Invalid url: " + e.getMessage());
+        } catch (IOException e) {
+            throw new SQLException("Could not parser URL: " + e.getMessage());
         } catch (URISyntaxException e) {
             throw new SQLException("Invalid url: " + e.getMessage());
         }
