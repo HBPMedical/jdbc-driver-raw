@@ -12,6 +12,10 @@ import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+/**
+ * The raw database metada
+ * TODO: Make less hardcoded values (creating services to get the info dynamically from the server?)
+ */
 public class RawDatabaseMetaData implements DatabaseMetaData {
 
     String url;

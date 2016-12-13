@@ -6,8 +6,10 @@ import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.PasswordTokenRequest;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.sql.*;
 import java.util.List;
 import java.util.Properties;

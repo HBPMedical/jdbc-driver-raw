@@ -2,7 +2,7 @@ import org.junit.Test;
 import raw.jdbc.ArrayResultSet;
 import raw.jdbc.RawDatabaseMetaData;
 import raw.jdbc.RawResultSet;
-import raw.jdbc.RsMetaData;
+import raw.jdbc.RawRsMetaData;
 
 import java.sql.*;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class TestMetadata extends TestQueries {
 
         };
         ResultSet rs = statement.executeQuery(objToQuery(records));
-        RsMetaData md = (RsMetaData) rs.getMetaData();
+        RawRsMetaData md = (RawRsMetaData) rs.getMetaData();
         assert (md.getColumnCount() == 6);
         logger.fine("col 1: type: " + md.getColumnType(1));
         logger.fine("col 6: type: " + md.getColumnType(6));
@@ -68,7 +68,7 @@ public class TestMetadata extends TestQueries {
     @Test
     public void testCollection() throws SQLException {
         ResultSet rs = statement.executeQuery("collection(1, 2, 3, 4)");
-        RsMetaData md = (RsMetaData) rs.getMetaData();
+        RawRsMetaData md = (RawRsMetaData) rs.getMetaData();
         assert (md.getColumnCount() == 1);
         assert (md.getColumnType(1) == Types.INTEGER);
         assert (md.getColumnName(1).equals(RawResultSet.SINGLE_ELEM_LABEL));
@@ -121,7 +121,7 @@ public class TestMetadata extends TestQueries {
         RawDatabaseMetaData md = (RawDatabaseMetaData) conn.getMetaData();
 
         ResultSet rs = md.getTables(null, null, "",null);
-
+        //TODO: register test files and get the table metadata
         while(rs.next()){
             logger.fine("table " + rs.getString(3));
         }

@@ -7,6 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 
+/**
+ * This is to return array data from a resultset
+ * This class is not finished yet and it is just a stump
+ * @param <T>
+ */
 public class RawArray<T> implements Array {
     private ArrayList data;
 

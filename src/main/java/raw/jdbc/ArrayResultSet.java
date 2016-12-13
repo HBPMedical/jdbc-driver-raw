@@ -233,7 +233,7 @@ public class ArrayResultSet implements ResultSet {
     public ResultSetMetaData getMetaData() throws SQLException {
 
         String[] names = this.names.keySet().toArray(new String[]{});
-        return new RsMetaData(names, this.types);
+        return new RawRsMetaData(names, this.types);
     }
 
     public Object getObject(int columnIndex) throws SQLException {

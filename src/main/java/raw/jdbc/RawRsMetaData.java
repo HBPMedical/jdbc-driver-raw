@@ -2,19 +2,15 @@ package raw.jdbc;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
-public class RsMetaData implements ResultSetMetaData {
+public class RawRsMetaData implements ResultSetMetaData {
 
     protected String[] columnNames;
     protected int[] types;
-    static Logger logger = Logger.getLogger(RsMetaData.class.getName());
+    static Logger logger = Logger.getLogger(RawRsMetaData.class.getName());
 
-    RsMetaData(String[] names, int[] types) throws SQLException {
+    RawRsMetaData(String[] names, int[] types) throws SQLException {
         this.columnNames = names;
         this.types = types;
     }
