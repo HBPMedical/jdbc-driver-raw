@@ -14,14 +14,10 @@ import java.sql.Date;
 import java.util.*;
 import java.util.logging.Logger;
 
-/**
- * Resultset which has a raw http-client to get query results
- */
 public class RawResultSet implements ResultSet {
     private RawRestClient client;
     QueryBlockResponse query;
 
-    // is each row a record or not
     private boolean isRecord = false;
     private String[] columnNames;
 
@@ -119,12 +115,14 @@ public class RawResultSet implements ResultSet {
         if (currentIndex < 0) {
             return null;
         } else {
+
             return query.data[currentIndex];
         }
     }
 
     /**
      * Will get current row value by column index and cast it to type T
+     *
      * @param columnIndex
      * @param tClass
      * @param <T>
@@ -141,9 +139,8 @@ public class RawResultSet implements ResultSet {
         if (isRecord) {
             Map<String, Object> map = (Map) obj;
             return castToType(map.get(columnNames[idx]), tClass);
+            //TODO: check if this is allowed
         } else if (obj.getClass().isArray()) {
-            //Should we return values like this in double dimension arrays?
-            //TODO: check if this is a good idea
             Object[] ary = (Object[]) obj;
             return castToType(ary[idx], tClass);
         } else if (obj.getClass() == ArrayList.class) {
@@ -159,6 +156,7 @@ public class RawResultSet implements ResultSet {
 
     /**
      * Will get current row value by column label and cast it to T
+     *
      * @param columnLabel
      * @param tClass
      * @param <T>
@@ -184,6 +182,7 @@ public class RawResultSet implements ResultSet {
 
     /**
      * Casts or transforms the data to array types
+     *
      * @param obj    The object to cast
      * @param tClass The desired output class
      * @param <T>    the desired output class
@@ -218,6 +217,7 @@ public class RawResultSet implements ResultSet {
 
     /**
      * Casts or transforms Objects to final type <T>
+     *
      * @param obj
      * @param tClass
      * @param <T>
@@ -401,6 +401,7 @@ public class RawResultSet implements ResultSet {
         } else {
             throw new SQLException("cannot get metadata for empty array");
         }
+
     }
 
     public Object getObject(int columnIndex) throws SQLException {

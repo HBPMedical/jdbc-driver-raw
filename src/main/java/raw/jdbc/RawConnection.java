@@ -23,11 +23,11 @@ public class RawConnection implements Connection {
     }
 
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        throw new UnsupportedOperationException("not implemented PreparedStatement");
+        return new RawPreparedStatement(client, this, sql);
     }
 
     public CallableStatement prepareCall(String sql) throws SQLException {
-        throw new UnsupportedOperationException("not implemented CallableStatement");
+        return new RawCallableStatement(client, this, sql);
     }
 
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
@@ -95,7 +95,7 @@ public class RawConnection implements Connection {
     }
 
     public int getTransactionIsolation() throws SQLException {
-        return  Connection.TRANSACTION_NONE;
+        return Connection.TRANSACTION_NONE;
     }
 
     public SQLWarning getWarnings() throws SQLException {
