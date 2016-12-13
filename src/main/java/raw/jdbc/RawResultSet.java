@@ -76,7 +76,6 @@ public class RawResultSet implements ResultSet {
             currentIndex++;
             currentRow++;
             return true;
-
         } else {
             if (query.hasMore) {
                 try {
@@ -151,7 +150,6 @@ public class RawResultSet implements ResultSet {
         } else {
             return castToType(obj, tClass);
         }
-
     }
 
     /**
@@ -241,7 +239,6 @@ public class RawResultSet implements ResultSet {
         } catch (ClassCastException e) {
             throw new ClassCastException(obj.getClass().getName() + " cannot be converted to " + tClass.getName());
         }
-
     }
 
     public String getString(int columnIndex) throws SQLException {
@@ -401,7 +398,6 @@ public class RawResultSet implements ResultSet {
         } else {
             throw new SQLException("cannot get metadata for empty array");
         }
-
     }
 
     public Object getObject(int columnIndex) throws SQLException {
