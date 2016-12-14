@@ -55,7 +55,7 @@ public class RawDriver implements Driver {
             RawRestClient client = new RawRestClient(executor, authUrl, credentials);
             return new RawConnection(url, client, credentials.username);
         } catch (IOException e) {
-            throw new SQLException("Could not get authorization token" + e.getMessage());
+            throw new SQLException("Could not get authorization token " + e.getMessage());
         }
 
     }
