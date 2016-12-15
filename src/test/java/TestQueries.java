@@ -84,7 +84,7 @@ public class TestQueries extends RawTest {
     public void testRecord() throws SQLException {
         Statement stmt = conn.createStatement();
 
-        Map<String, Object>[] records = new Map[]{
+        Map[] records = new Map[]{
                 toMap(new Object[][]{{"_string", "hello"}, {"_int", 1}, {"_long", 100000000001L}, {"_double", 0.01d}, {"_float", 1.01f}}),
                 toMap(new Object[][]{{"_string", "world"}, {"_int", 2}, {"_long", 100000000002L}, {"_double", 0.01d}, {"_float", 1.01f}}),
                 toMap(new Object[][]{{"_string", "again"}, {"_int", 3}, {"_long", 100000000003L}, {"_double", 0.01d}, {"_float", 1.01f}}),
@@ -119,7 +119,7 @@ public class TestQueries extends RawTest {
     public void testArrays() throws SQLException {
         Statement stmt = conn.createStatement();
 
-        Map<String, Object>[] records = new Map[]{
+        Map[] records = new Map[]{
                 toMap(new Object[][]{
                         {"_string", new String[]{"hello", "world", "again"}},
                         {"_int", new int[]{1, 2, 3}},
@@ -169,7 +169,7 @@ public class TestQueries extends RawTest {
 
     @Test
     public void testNested() throws SQLException {
-        Map<String, Object>[] records = new Map[]{
+        Map[] records = new Map[]{
                 toMap(new Object[][]{
                         {"_string", "hello"},
                         {"_list", new int[]{1, 2, 3}},
@@ -198,7 +198,7 @@ public class TestQueries extends RawTest {
             int[] ints = rs.getObject("_list", int[].class);
             assert (Arrays.equals(ints, (int[]) records[n].get("_list")));
 
-            LinkedHashMap<String, Object> obj = rs.getObject("_record", LinkedHashMap.class);
+            LinkedHashMap obj = rs.getObject("_record", LinkedHashMap.class);
             LinkedHashMap expected = (LinkedHashMap<String, Object>) records[n].get("_record");
             logger.fine("got:" + obj + " expected: " + expected);
             //TODO: find a way of comparing LinkedHashMaps
@@ -220,7 +220,7 @@ public class TestQueries extends RawTest {
     }
 
     static protected Map<String, Object> toMap(Object[][] entries) {
-        Map<String, Object> map = new LinkedHashMap();
+        Map<String, Object> map = new LinkedHashMap<String, Object>();
         for (Object[] e : entries) {
             map.put((String) e[0], e[1]);
         }

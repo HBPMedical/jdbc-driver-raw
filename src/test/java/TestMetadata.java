@@ -18,7 +18,7 @@ public class TestMetadata extends TestQueries {
 
     @Test
     public void tesTypes() throws SQLException {
-        Map<String, Object>[] records = new Map[]{
+        Map[] records = new Map[]{
                 toMap(new Object[][]{
                         {"_string", "hello"},
                         {"_int", 1},
