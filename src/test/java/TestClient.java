@@ -1,12 +1,11 @@
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
-import raw.jdbc.rawclient.requests.QueryBlockResponse;
+import raw.jdbc.ArrayResultSet;
+import raw.jdbc.rawclient.requests.*;
 import raw.jdbc.rawclient.RawRestClient;
-import raw.jdbc.rawclient.requests.SchemaInfo;
-import raw.jdbc.rawclient.requests.SchemaInfoColumn;
-import raw.jdbc.rawclient.requests.TokenResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class TestClient extends RawTest {
@@ -37,6 +36,16 @@ public class TestClient extends RawTest {
     public void testAsyncQuery() throws IOException, ParseException {
         int id = client.asyncQueryStart("collection(1,2,4)");
         logger.fine("got queryId: " + id);
+    }
+
+    @Test
+    public void testPollQuery() throws IOException, InterruptedException {
+        String query = "select * from collection(1,2,3)";
+        int nResults = 1000;
+        AsyncQueryNextResponse results = client.pollQuery(query, nResults);
+        logger.fine("results " + results.data);
+        assert (results.size == 3);
+        assert (results.data.getClass() == ArrayList.class);
     }
 
     @Test

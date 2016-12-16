@@ -54,7 +54,7 @@ public class RawRestClient {
         HttpResponse response = client.execute(post);
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
-            String msg = String.format("Token request failed with code %d, username=%s, password=%s", code, credentials.username, credentials.password );
+            String msg = String.format("Token request failed with code %d, username=%s, password=%s", code, credentials.username, credentials.password);
             throw new IOException(msg);
         }
 
@@ -86,6 +86,54 @@ public class RawRestClient {
         request.query = query;
         AsyncQueryResponse data = doJsonPost("/async-query-start", request, AsyncQueryResponse.class);
         return data.queryId;
+    }
+
+    AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
+        AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
+        data.queryId = request.queryId;
+        return data;
+    }
+
+    public AsyncQueryNextResponse asyncQueryNext(int queryId, int numberOfResults) throws IOException {
+        AsyncQueryNextRequest request = new AsyncQueryNextRequest();
+        request.queryId = queryId;
+        request.numberResults = numberOfResults;
+        return asyncQueryNext(request);
+    }
+
+    public void asyncQueryClose(int queryId) throws IOException {
+        AsyncQueryCloseRequest request = new AsyncQueryCloseRequest();
+        request.queryId = queryId;
+        AsyncQueryCloseResponse data = doJsonPost("/async-query-close", request, AsyncQueryCloseResponse.class);
+    }
+
+    public AsyncQueryNextResponse pollQuery(String query, int numberOfResults) throws IOException {
+        int queryId = asyncQueryStart(query);
+        AsyncQueryNextRequest request = new AsyncQueryNextRequest();
+        request.queryId = queryId;
+        request.numberResults = numberOfResults;
+        logger.fine("polling queryId: " + queryId);
+        while (true) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                throw new IOException("sleep interruped while polling " + e.getMessage());
+            }
+            AsyncQueryNextResponse data = asynQueryNext(request);
+            logger.fine("polling response, size: " + data.size + " hasMore: " + data.hasMore);
+            if (data.size > 0) {
+                logger.fine("got results: compilation time: " + data.compilationTime +
+                        " execution time: " + data.executionTime);
+                return data;
+            }
+        }
+
+    }
+
+    AsyncQueryNextResponse asynQueryNext(AsyncQueryNextRequest request) throws IOException {
+        AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
+        data.queryId = request.queryId;
+        return data;
     }
 
     public QueryBlockResponse queryStart(String query, int resultsPerPage) throws IOException {

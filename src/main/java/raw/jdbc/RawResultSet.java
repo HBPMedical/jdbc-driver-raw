@@ -2,6 +2,8 @@ package raw.jdbc;
 
 import org.apache.commons.lang3.ArrayUtils;
 import raw.jdbc.rawclient.RawRestClient;
+import raw.jdbc.rawclient.requests.AsyncQueryNextRequest;
+import raw.jdbc.rawclient.requests.AsyncQueryNextResponse;
 import raw.jdbc.rawclient.requests.QueryBlockResponse;
 
 import java.io.IOException;
@@ -16,7 +18,8 @@ import java.util.logging.Logger;
 
 public class RawResultSet implements ResultSet {
     private RawRestClient client;
-    QueryBlockResponse query;
+
+    AsyncQueryNextResponse query;
 
     private boolean isRecord = false;
     private String[] columnNames;
@@ -24,7 +27,6 @@ public class RawResultSet implements ResultSet {
     private RawStatement statement;
     private int currentRow = -1;
     private int currentIndex = -1;
-    private String sql;
     private int resultsPerPage = 1000;
     public static final String SINGLE_ELEM_LABEL = "element";
 
@@ -33,11 +35,10 @@ public class RawResultSet implements ResultSet {
     RawResultSet(RawRestClient client, String sql, RawStatement parent) throws SQLException {
         this.client = client;
         this.statement = parent;
-        this.sql = sql;
         try {
-            query = client.queryStart(sql, resultsPerPage);
-            if (query.data.length > 0) {
-                Object obj = query.data[0];
+            query = client.pollQuery(sql, resultsPerPage);
+            if (query.data.size() > 0) {
+                Object obj = query.data.get(0);
                 if (obj.getClass() == LinkedHashMap.class) {
                     this.isRecord = true;
                     Map<String, Object> map = (Map) obj;
@@ -47,7 +48,7 @@ public class RawResultSet implements ResultSet {
                     columnNames = new String[]{SINGLE_ELEM_LABEL};
                 }
             }
-            logger.fine("initialized query token: " + query.token + " hasMore: " + query.hasMore);
+            logger.fine("initialized query token: " + query.queryId + " hasMore: " + query.hasMore);
         } catch (IOException e) {
             throw new SQLException("could not start query: " + e.getMessage());
         }
@@ -59,7 +60,7 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean isAfterLast() throws SQLException {
-        return (currentIndex >= query.data.length) && (!query.hasMore);
+        return (currentIndex >= query.data.size()) && (!query.hasMore);
     }
 
     public boolean isFirst() throws SQLException {
@@ -67,20 +68,20 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean isLast() throws SQLException {
-        return (currentIndex == (query.data.length - 1) && !query.hasMore);
+        return (currentIndex == (query.data.size() - 1) && !query.hasMore);
     }
 
     public boolean next() throws SQLException {
 
-        if (currentIndex < query.data.length - 1) {
+        if (currentIndex < query.data.size() - 1) {
             currentIndex++;
             currentRow++;
             return true;
         } else {
             if (query.hasMore) {
                 try {
-                    logger.fine("getting more results for query " + query.token);
-                    query = client.queryNext(query.token, resultsPerPage);
+                    logger.fine("getting more results for query " + query.queryId);
+                    query = client.asyncQueryNext(query.queryId, resultsPerPage);
                     currentIndex = 0;
                     currentRow++;
                     return true;
@@ -88,7 +89,7 @@ public class RawResultSet implements ResultSet {
                     throw new SQLException("Could not get next page for query error:" + e.getMessage());
                 }
             } else {
-                if (currentIndex == query.data.length - 1) {
+                if (currentIndex == query.data.size() - 1) {
                     currentIndex++;
                 }
                 return false;
@@ -99,7 +100,7 @@ public class RawResultSet implements ResultSet {
     public void close() throws SQLException {
         if (query.hasMore) {
             try {
-                client.queryClose(query.token);
+                client.asyncQueryClose(query.queryId);
             } catch (IOException e) {
                 throw new SQLException("query-close failed: " + e.getMessage());
             }
@@ -115,7 +116,7 @@ public class RawResultSet implements ResultSet {
             return null;
         } else {
 
-            return query.data[currentIndex];
+            return query.data.get(currentIndex);
         }
     }
 
@@ -383,16 +384,16 @@ public class RawResultSet implements ResultSet {
 
     public ResultSetMetaData getMetaData() throws SQLException {
         //TODO: Handle nulls (try to check next element)
-        if (query.data.length > 0) {
+        if (query.data.size() > 0) {
             int[] types = new int[columnNames.length];
             if (isRecord) {
-                Map map = (LinkedHashMap<String, Object>) query.data[0];
+                Map map = (LinkedHashMap<String, Object>) query.data.get(0);
                 for (int i = 0; i < columnNames.length; i++) {
                     int t = RawDatabaseMetaData.objToType(map.get(columnNames[i]));
                     types[i] = t;
                 }
             } else {
-                types[0] = RawDatabaseMetaData.objToType(query.data[0]);
+                types[0] = RawDatabaseMetaData.objToType(query.data.get(0));
             }
             return new RawRsMetaData(columnNames, types);
         } else {

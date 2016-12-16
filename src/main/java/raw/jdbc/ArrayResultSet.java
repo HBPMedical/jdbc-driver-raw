@@ -23,7 +23,7 @@ public class ArrayResultSet implements ResultSet {
         this.data = data;
         this.names = getNames(columnNames);
         this.types = new int[columnNames.length];
-        if(data.length > 0 ) {
+        if (data.length > 0) {
             for (int i = 0; i < columnNames.length; i++) {
                 types[i] = RawDatabaseMetaData.objToType(data[0][i]);
             }
@@ -48,7 +48,7 @@ public class ArrayResultSet implements ResultSet {
         }
     }
 
-    private static LinkedHashMap<String, Integer> getNames(String[] columnNames){
+    private static LinkedHashMap<String, Integer> getNames(String[] columnNames) {
         LinkedHashMap<String, Integer> out = new LinkedHashMap<String, Integer>();
         for (int i = 0; i < columnNames.length; i++) {
             out.put(columnNames[i], i);
@@ -61,7 +61,7 @@ public class ArrayResultSet implements ResultSet {
             next();
         }
         Object obj = data[index][columnIndex - 1];
-        if(tClass == Short.class && obj.getClass() == Integer.class) {
+        if (tClass == Short.class && obj.getClass() == Integer.class) {
             Integer i = (Integer) obj;
             return (T) (Short) i.shortValue();
         } else if (tClass == Byte.class && obj.getClass() == Integer.class) {
@@ -245,7 +245,7 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public int findColumn(String columnLabel) throws SQLException {
-        return names.get(columnLabel+1);
+        return names.get(columnLabel + 1);
     }
 
     public Reader getCharacterStream(int columnIndex) throws SQLException {
