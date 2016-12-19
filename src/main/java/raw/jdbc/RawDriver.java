@@ -4,6 +4,7 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.PasswordTokenRequest;
+import raw.jdbc.rawclient.requests.TokenResponse;
 
 import java.io.IOException;
 import java.net.URI;
@@ -17,15 +18,15 @@ import java.util.logging.Logger;
 
 public class RawDriver implements Driver {
 
-    static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
-    static final String JDBC_CLIENT_ID = "raw-jdbc";
-    static final String GRANT_TYPE = "password";
-    static final String EXEC_PROPERTY = "executor";
-    static final String AUTH_PROPERTY = "auth_url";
-    static final String USER_PROPERTY = "user";
-    static final String PASSWD_PROPERTY = "password";
+    private static final String AUTH_SERVER_URL = "http://localhost:9000/oauth2/access_token";
+    private static final String JDBC_CLIENT_ID = "raw-jdbc";
+    private static final String GRANT_TYPE = "password";
+    private static final String EXEC_PROPERTY = "executor";
+    private static final String AUTH_PROPERTY = "auth_url";
+    private static final String USER_PROPERTY = "user";
+    private static final String PASSWD_PROPERTY = "password";
 
-    static Logger logger = Logger.getLogger(RawDriver.class.getName());
+    private static Logger logger = Logger.getLogger(RawDriver.class.getName());
 
     static {
         register();
@@ -52,7 +53,8 @@ public class RawDriver implements Driver {
         credentials.username = props.getProperty(RawDriver.USER_PROPERTY);
         credentials.password = props.getProperty(RawDriver.PASSWD_PROPERTY);
         try {
-            RawRestClient client = new RawRestClient(executor, authUrl, credentials);
+            TokenResponse token = RawRestClient.getPasswdGrantToken(authUrl, credentials);
+            RawRestClient client = new RawRestClient(executor, token);
             return new RawConnection(url, client, credentials.username);
         } catch (IOException e) {
             throw new SQLException("Could not get authorization token " + e.getMessage());

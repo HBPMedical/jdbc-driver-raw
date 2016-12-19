@@ -5,20 +5,18 @@ import raw.jdbc.rawclient.RawRestClient;
 import java.sql.*;
 
 public class RawStatement implements Statement {
-    RawRestClient client;
-    RawConnection connection;
-    int queryTimeout;
-    int fetchSize = 1000;
-    ResultSet result;
+    private RawRestClient client;
+    private RawConnection connection;
+    private int queryTimeout;
+    private int fetchSize = 1000;
+    private ResultSet result;
 
     RawStatement(RawRestClient client, RawConnection parent) {
         this.client = client;
         this.connection = parent;
-
     }
 
     public ResultSet executeQuery(String sql) throws SQLException {
-
         RawResultSet rs = new RawResultSet(client, sql, this);
         rs.setFetchSize(fetchSize);
         return rs;
@@ -77,11 +75,9 @@ public class RawStatement implements Statement {
 
     public void setCursorName(String name) throws SQLException {
         throw new UnsupportedOperationException("Not implemented setCursorName");
-
     }
 
     public boolean execute(String sql) throws SQLException {
-
         this.result = new RawResultSet(client, sql, this);
         return true;
     }

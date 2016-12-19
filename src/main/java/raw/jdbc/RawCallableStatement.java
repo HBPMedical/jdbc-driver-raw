@@ -11,7 +11,7 @@ import java.sql.*;
 import java.util.Calendar;
 import java.util.Map;
 
-public class RawCallableStatement extends RawPreparedStatement implements CallableStatement {
+class RawCallableStatement extends RawPreparedStatement implements CallableStatement {
 
     RawCallableStatement(RawRestClient client, RawConnection parent, String sql) {
         super(client, parent, sql);

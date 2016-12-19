@@ -13,11 +13,11 @@ import java.util.Map;
  * ResultSet that gets the data from a double dimension array
  */
 public class ArrayResultSet implements ResultSet {
-    Object[][] data;
-    Map<String, Integer> names;
-    int[] types;
+    private Object[][] data;
+    private Map<String, Integer> names;
+    private int[] types;
 
-    int index = -1;
+    private int index = -1;
 
     public ArrayResultSet(Object[][] data, String[] columnNames) throws SQLException {
         this.data = data;
@@ -39,7 +39,7 @@ public class ArrayResultSet implements ResultSet {
 
     }
 
-    public ArrayResultSet(Object[][] data, String columnNames[], Object[] objects) throws SQLException {
+    ArrayResultSet(Object[][] data, String columnNames[], Object[] objects) throws SQLException {
         this.data = data;
         this.names = getNames(columnNames);
         types = new int[columnNames.length];

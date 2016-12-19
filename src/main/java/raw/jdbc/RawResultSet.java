@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class RawResultSet implements ResultSet {
     private RawRestClient client;
 
-    AsyncQueryNextResponse query;
+    private AsyncQueryNextResponse query;
 
     private boolean isRecord = false;
     private String[] columnNames;
@@ -30,22 +30,22 @@ public class RawResultSet implements ResultSet {
     private int resultsPerPage = 1000;
     public static final String SINGLE_ELEM_LABEL = "element";
 
-    static Logger logger = Logger.getLogger(RawResultSet.class.getName());
+    private static Logger logger = Logger.getLogger(RawResultSet.class.getName());
 
     RawResultSet(RawRestClient client, String sql, RawStatement parent) throws SQLException {
         this.client = client;
         this.statement = parent;
         try {
-            query = client.pollQuery(sql, resultsPerPage);
-            if (query.data.size() > 0) {
-                Object obj = query.data.get(0);
+            this.query = client.pollQuery(sql, resultsPerPage);
+            if (this.query.data.size() > 0) {
+                Object obj = this.query.data.get(0);
                 if (obj.getClass() == LinkedHashMap.class) {
                     this.isRecord = true;
                     Map<String, Object> map = (Map) obj;
-                    columnNames = map.keySet().toArray(new String[]{});
+                    this.columnNames = map.keySet().toArray(new String[]{});
                 } else {
                     this.isRecord = false;
-                    columnNames = new String[]{SINGLE_ELEM_LABEL};
+                    this.columnNames = new String[]{SINGLE_ELEM_LABEL};
                 }
             }
             logger.fine("initialized query token: " + query.queryId + " hasMore: " + query.hasMore);
