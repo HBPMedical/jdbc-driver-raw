@@ -1,6 +1,5 @@
 import org.junit.Test;
 import raw.jdbc.ArrayResultSet;
-import raw.jdbc.RawDatabaseMetaData;
 import raw.jdbc.RawResultSet;
 import raw.jdbc.RawRsMetaData;
 
@@ -76,7 +75,7 @@ public class TestMetadata extends TestQueries {
 
     @Test
     public void testSchemas() throws SQLException {
-        RawDatabaseMetaData md = (RawDatabaseMetaData) conn.getMetaData();
+        DatabaseMetaData md = conn.getMetaData();
 
         ResultSet rs = md.getSchemas();
         while (rs.next()) {
@@ -118,11 +117,11 @@ public class TestMetadata extends TestQueries {
 
     @Test
     public void getTableMetadata() throws SQLException {
-        RawDatabaseMetaData md = (RawDatabaseMetaData) conn.getMetaData();
+        DatabaseMetaData md = conn.getMetaData();
 
-        ResultSet rs = md.getTables(null, null, "",null);
+        ResultSet rs = md.getTables(null, null, "", null);
         //TODO: register test files and get the table metadata
-        while(rs.next()){
+        while (rs.next()) {
             logger.fine("table " + rs.getString(3));
         }
     }
