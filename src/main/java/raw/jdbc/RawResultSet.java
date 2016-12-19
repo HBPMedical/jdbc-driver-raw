@@ -38,8 +38,8 @@ public class RawResultSet implements ResultSet {
         try {
             this.query = client.pollQuery(sql, resultsPerPage);
             if (this.query.data.size() > 0) {
-                Object obj = this.query.data.get(0);
-                if (obj.getClass() == LinkedHashMap.class) {
+                Object obj = firstNotNull(this.query.data);
+                if (obj != null && obj.getClass() == LinkedHashMap.class) {
                     this.isRecord = true;
                     Map<String, Object> map = (Map) obj;
                     this.columnNames = map.keySet().toArray(new String[]{});
@@ -52,7 +52,15 @@ public class RawResultSet implements ResultSet {
         } catch (IOException e) {
             throw new SQLException("could not start query: " + e.getMessage());
         }
+    }
 
+    private static Object firstNotNull(Iterable<Object> list) {
+        for (Object obj : list) {
+            if (obj != null) {
+                return obj;
+            }
+        }
+        return null;
     }
 
     public boolean isBeforeFirst() throws SQLException {
@@ -387,18 +395,27 @@ public class RawResultSet implements ResultSet {
         if (query.data.size() > 0) {
             int[] types = new int[columnNames.length];
             if (isRecord) {
-                Map map = (LinkedHashMap<String, Object>) query.data.get(0);
                 for (int i = 0; i < columnNames.length; i++) {
-                    int t = RawDatabaseMetaData.objToType(map.get(columnNames[i]));
+                    Object obj = firstNotNull(query.data, columnNames[i]);
+                    int t = RawDatabaseMetaData.objToType(obj);
                     types[i] = t;
                 }
             } else {
-                types[0] = RawDatabaseMetaData.objToType(query.data.get(0));
+                types[0] = RawDatabaseMetaData.objToType(firstNotNull(query.data));
             }
             return new RawRsMetaData(columnNames, types);
         } else {
             throw new SQLException("cannot get metadata for empty array");
         }
+    }
+
+    private Object firstNotNull(ArrayList<LinkedHashMap<String, Object>> list, String key){
+        for(LinkedHashMap<String, Object> map: list) {
+            if(map !=null && map.get(key) != null){
+                return map.get(key);
+            }
+        }
+        return null;
     }
 
     public Object getObject(int columnIndex) throws SQLException {

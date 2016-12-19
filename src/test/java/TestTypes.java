@@ -8,19 +8,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-public class TestQueries extends RawTest {
+public class TestTypes extends RawTest {
 
 
     Connection conn;
 
-    public TestQueries() throws SQLException {
+    public TestTypes() throws SQLException {
         String url = "jdbc:raw:http://localhost:54321";
         RawDriver driver = new RawDriver();
         conn = driver.connect(url, conf);
     }
 
     @Test
-    public void testInCollection() throws SQLException {
+    public void testIntCollection() throws SQLException {
         Statement stmt = conn.createStatement();
         RawResultSet rs = (RawResultSet) stmt.executeQuery("select * from collection(1,2,3,4) x where x > 2");
 
