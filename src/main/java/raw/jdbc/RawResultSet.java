@@ -409,7 +409,7 @@ public class RawResultSet implements ResultSet {
         }
     }
 
-    private Object firstNotNull(ArrayList<LinkedHashMap<String, Object>> list, String key){
+    private Object firstNotNull(Iterable<LinkedHashMap<String, Object>> list, String key){
         for(LinkedHashMap<String, Object> map: list) {
             if(map !=null && map.get(key) != null){
                 return map.get(key);

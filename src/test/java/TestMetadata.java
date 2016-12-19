@@ -6,7 +6,7 @@ import raw.jdbc.RawRsMetaData;
 import java.sql.*;
 import java.util.Map;
 
-public class TestMetadata extends TestTypes {
+public class TestMetadata extends QueryTypeTest {
 
     Statement statement;
 

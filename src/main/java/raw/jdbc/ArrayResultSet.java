@@ -25,11 +25,21 @@ public class ArrayResultSet implements ResultSet {
         this.types = new int[columnNames.length];
         if (data.length > 0) {
             for (int i = 0; i < columnNames.length; i++) {
-                types[i] = RawDatabaseMetaData.objToType(data[0][i]);
+                Object obj = firstNotNull(data, i);
+                types[i] = RawDatabaseMetaData.objToType(obj);
             }
         } else {
             throw new SQLException("Could not guess type of empty object");
         }
+    }
+
+    private static Object firstNotNull(Object[][]data, int col){
+        for(Object[] row: data){
+            if(row != null && row[col] != null){
+                return row[col];
+            }
+        }
+        return null;
     }
 
     public ArrayResultSet(Object[][] data, String columnNames[], int[] types) throws SQLException {
