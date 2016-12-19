@@ -232,7 +232,9 @@ public class RawResultSet implements ResultSet {
      */
     private <T> T castToType(Object obj, Class<T> tClass) {
         try {
-            if (tClass == String.class) {
+            if(obj == null){
+                return null;
+            }else if (tClass == String.class) {
                 return (T) obj.toString();
             } else if (tClass == Float.class) {
                 return (T) new Float((Double) obj);
