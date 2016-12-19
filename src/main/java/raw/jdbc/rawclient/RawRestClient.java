@@ -1,11 +1,9 @@
 package raw.jdbc.rawclient;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -91,45 +89,12 @@ public class RawRestClient {
     public int asyncQueryStart(String query) throws IOException {
         AsyncQueryRequest request = new AsyncQueryRequest();
         request.query = query;
-        String json = mapper.writeValueAsString(request);
-        HttpResponse response = doJsonPost("/async-query-start", json);
-        checkQueryError(response);
-        AsyncQueryResponse data = getObjFromResponse(response, AsyncQueryResponse.class);
+        AsyncQueryResponse data = doJsonPost("/async-query-start", request, AsyncQueryResponse.class);
         return data.queryId;
-    }
-
-    public void checkQueryError(HttpResponse response) throws IOException {
-        int code = response.getStatusLine().getStatusCode();
-        if (code == BAD_REQUEST) {
-            QueryErrorResponse errorResponse = getObjFromResponse(response, QueryErrorResponse.class);
-            StringBuilder msg = new StringBuilder(errorResponse.errorType + ": ");
-            Map error = errorResponse.error;
-            if (error.containsKey("prettyMessage")) {
-                msg.append(error.get("prettyMessage"));
-            } else if (error.containsKey("errors")) {
-                for (Object e : (ArrayList<Object>) error.get("errors")) {
-                    LinkedHashMap map = (LinkedHashMap<String, Object>) e;
-                    msg.append("\n\t");
-                    msg.append(map.get("errorType") + ": ");
-                    msg.append(map.get("prettyMessage"));
-                }
-            } else {
-                msg.append(getJsonContent(response));
-            }
-            throw new RawClientException(msg.toString());
-        } else if (code == INTERNAL_SERVER_ERROR) {
-            GenericErrorResponse error = getObjFromResponse(response, GenericErrorResponse.class);
-            throw new RawClientException(error.exceptionType + ": " + error.message);
-        } else if (code != HTTP_OK) {
-            throw new RawClientException("async-query-start request failed with code " + code +
-                    " response: " +  EntityUtils.toString(response.getEntity())
-            );
-        }
     }
 
     AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
         AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
-        data.queryId = request.queryId;
         return data;
     }
 
@@ -143,7 +108,7 @@ public class RawRestClient {
     public void asyncQueryClose(int queryId) throws IOException {
         AsyncQueryCloseRequest request = new AsyncQueryCloseRequest();
         request.queryId = queryId;
-        AsyncQueryCloseResponse data = doJsonPost("/async-query-close", request, AsyncQueryCloseResponse.class);
+        doJsonPost("/async-query-close", request, AsyncQueryCloseResponse.class);
     }
 
     public AsyncQueryNextResponse pollQuery(String query, int numberOfResults) throws IOException {
@@ -151,27 +116,20 @@ public class RawRestClient {
         AsyncQueryNextRequest request = new AsyncQueryNextRequest();
         request.queryId = queryId;
         request.numberResults = numberOfResults;
-        logger.fine("polling queryId: " + queryId);
+        //TODO: Add some sort of timeout for query execution
         while (true) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 throw new RawClientException("sleep interruped while polling " + e.getMessage());
             }
-            AsyncQueryNextResponse data = asynQueryNext(request);
-            logger.fine("polling response, size: " + data.size + " hasMore: " + data.hasMore);
+            AsyncQueryNextResponse data = asyncQueryNext(request);
             if (data.size > 0) {
                 logger.fine("got results: compilation time: " + data.compilationTime +
                         " execution time: " + data.executionTime);
                 return data;
             }
         }
-    }
-
-    AsyncQueryNextResponse asynQueryNext(AsyncQueryNextRequest request) throws IOException {
-        AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
-        data.queryId = request.queryId;
-        return data;
     }
 
     public QueryBlockResponse queryStart(String query, int resultsPerPage) throws IOException {
@@ -227,8 +185,13 @@ public class RawRestClient {
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
             String content = EntityUtils.toString(response.getEntity());
-            throw new RawClientException(path + " request failed with code " + code +
-                    " content: " + content);
+            try {
+                GenericErrorResponse error = mapper.readValue(content, GenericErrorResponse.class);
+                throw new RawClientException(error.errorType + ": " + error.errorDescription);
+            } catch (JsonParseException e) {
+                throw new RawClientException(path + " request failed with code " + code +
+                        " content: " + content);
+            }
         }
         return getObjFromResponse(response, responseClass);
     }
