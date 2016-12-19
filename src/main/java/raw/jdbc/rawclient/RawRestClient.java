@@ -1,6 +1,9 @@
 package raw.jdbc.rawclient;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.apache.http.HttpResponse;
@@ -17,6 +20,10 @@ public class RawRestClient {
 
     private static final String JSON_CONTENT = "application/json";
     private static final int HTTP_OK = 200;
+    private static final int BAD_REQUEST = 400;
+    private static final int UNAUTHORIZED = 401;
+    private static final int FORBIDEN = 403;
+    private static final int INTERNAL_SERVER_ERROR = 501;
 
     private static Logger logger = Logger.getLogger(RawRestClient.class.getName());
     private static ObjectMapper mapper = new ObjectMapper();
@@ -54,10 +61,10 @@ public class RawRestClient {
         HttpResponse response = client.execute(post);
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
-            String msg = String.format("Token request failed with code %d, username=%s, password=%s", code, credentials.username, credentials.password);
-            throw new IOException(msg);
+            String content = EntityUtils.toString(response.getEntity());
+            logger.warning("Token request failed with code: " + code + " response: " + content);
+            throw new RawClientException("Token request failed with code " + code);
         }
-
         String jsonStr = getJsonContent(response);
         TokenResponse oauthToken = mapper.readValue(jsonStr, TokenResponse.class);
         return oauthToken;
@@ -84,8 +91,40 @@ public class RawRestClient {
     public int asyncQueryStart(String query) throws IOException {
         AsyncQueryRequest request = new AsyncQueryRequest();
         request.query = query;
-        AsyncQueryResponse data = doJsonPost("/async-query-start", request, AsyncQueryResponse.class);
+        String json = mapper.writeValueAsString(request);
+        HttpResponse response = doJsonPost("/async-query-start", json);
+        checkQueryError(response);
+        AsyncQueryResponse data = getObjFromResponse(response, AsyncQueryResponse.class);
         return data.queryId;
+    }
+
+    public void checkQueryError(HttpResponse response) throws IOException {
+        int code = response.getStatusLine().getStatusCode();
+        if (code == BAD_REQUEST) {
+            QueryErrorResponse errorResponse = getObjFromResponse(response, QueryErrorResponse.class);
+            StringBuilder msg = new StringBuilder(errorResponse.errorType + ": ");
+            Map error = errorResponse.error;
+            if (error.containsKey("prettyMessage")) {
+                msg.append(error.get("prettyMessage"));
+            } else if (error.containsKey("errors")) {
+                for (Object e : (ArrayList<Object>) error.get("errors")) {
+                    LinkedHashMap map = (LinkedHashMap<String, Object>) e;
+                    msg.append("\n\t");
+                    msg.append(map.get("errorType") + ": ");
+                    msg.append(map.get("prettyMessage"));
+                }
+            } else {
+                msg.append(getJsonContent(response));
+            }
+            throw new RawClientException(msg.toString());
+        } else if (code == INTERNAL_SERVER_ERROR) {
+            GenericErrorResponse error = getObjFromResponse(response, GenericErrorResponse.class);
+            throw new RawClientException(error.exceptionType + ": " + error.message);
+        } else if (code != HTTP_OK) {
+            throw new RawClientException("async-query-start request failed with code " + code +
+                    " response: " +  EntityUtils.toString(response.getEntity())
+            );
+        }
     }
 
     AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
@@ -117,7 +156,7 @@ public class RawRestClient {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                throw new IOException("sleep interruped while polling " + e.getMessage());
+                throw new RawClientException("sleep interruped while polling " + e.getMessage());
             }
             AsyncQueryNextResponse data = asynQueryNext(request);
             logger.fine("polling response, size: " + data.size + " hasMore: " + data.hasMore);
@@ -127,7 +166,6 @@ public class RawRestClient {
                 return data;
             }
         }
-
     }
 
     AsyncQueryNextResponse asynQueryNext(AsyncQueryNextRequest request) throws IOException {
@@ -162,7 +200,7 @@ public class RawRestClient {
     private static String getJsonContent(HttpResponse response) throws IOException {
         String contentType = response.getEntity().getContentType().getValue();
         if (!contentType.contains(JSON_CONTENT)) {
-            throw new RuntimeException(
+            throw new RawClientException(
                     "Expected content with '" + JSON_CONTENT + "' but got instead " + contentType);
         }
         return EntityUtils.toString(response.getEntity());
@@ -189,8 +227,8 @@ public class RawRestClient {
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
             String content = EntityUtils.toString(response.getEntity());
-            logger.warning("Request to " + path + "failed code: " + code + " response: " + content);
-            throw new IOException("json post request to " + path + " failed with code " + code);
+            throw new RawClientException(path + " request failed with code " + code +
+                    " content: " + content);
         }
         return getObjFromResponse(response, responseClass);
     }
