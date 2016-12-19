@@ -15,16 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import raw.jdbc.rawclient.requests.*;
 
 public class RawRestClient {
+    private static Logger logger = Logger.getLogger(RawRestClient.class.getName());
+    private static ObjectMapper mapper = new ObjectMapper();
 
     private static final String JSON_CONTENT = "application/json";
     private static final int HTTP_OK = 200;
-    private static final int BAD_REQUEST = 400;
-    private static final int UNAUTHORIZED = 401;
-    private static final int FORBIDEN = 403;
-    private static final int INTERNAL_SERVER_ERROR = 501;
-
-    private static Logger logger = Logger.getLogger(RawRestClient.class.getName());
-    private static ObjectMapper mapper = new ObjectMapper();
 
     private HttpClient client = HttpClientBuilder.create().build();
     private String executerUrl;
@@ -64,16 +59,14 @@ public class RawRestClient {
             throw new RawClientException("Token request failed with code " + code);
         }
         String jsonStr = getJsonContent(response);
-        TokenResponse oauthToken = mapper.readValue(jsonStr, TokenResponse.class);
-        return oauthToken;
+        return mapper.readValue(jsonStr, TokenResponse.class);
     }
 
     public String getVersion() throws IOException {
         HttpResponse response = doGet("/version");
         String contentType = response.getEntity().getContentType().getValue();
         assert (contentType.contains("text/plain"));
-        String data = EntityUtils.toString(response.getEntity());
-        return data;
+        return EntityUtils.toString(response.getEntity());
     }
 
     public SchemaInfo[] getSchemaInfo() throws IOException {
@@ -93,9 +86,8 @@ public class RawRestClient {
         return data.queryId;
     }
 
-    AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
-        AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
-        return data;
+    private AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
+        return doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
     }
 
     public AsyncQueryNextResponse asyncQueryNext(int queryId, int numberOfResults) throws IOException {
@@ -164,12 +156,6 @@ public class RawRestClient {
         return EntityUtils.toString(response.getEntity());
     }
 
-    private <T> T getObjFromResponse(HttpResponse response, Class<T> tClass) throws IOException {
-        String json = getJsonContent(response);
-        T obj = mapper.readValue(json, tClass);
-        return obj;
-    }
-
     private HttpResponse doJsonPost(String path, String json) throws IOException {
         HttpPost post = new HttpPost(executerUrl + path);
         post.setHeader("Authorization", "Bearer " + credentials.access_token);
@@ -193,7 +179,8 @@ public class RawRestClient {
                         " content: " + content);
             }
         }
-        return getObjFromResponse(response, responseClass);
+        String data = getJsonContent(response);
+        return mapper.readValue(data, responseClass);
     }
 
     private HttpResponse doGet(String path) throws IOException {
