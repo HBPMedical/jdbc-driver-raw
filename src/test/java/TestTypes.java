@@ -45,7 +45,7 @@ public class TestTypes extends QueryTypeTest {
         ResultSet rs = stmt.executeQuery(objToQuery(list));
         for (int i = 0; i < list.length; i++) {
             rs.next();
-            assert (rs.getInt(i + 1) == list[i]);
+            assert (rs.getInt(1) == list[i]);
         }
     }
 
@@ -58,7 +58,7 @@ public class TestTypes extends QueryTypeTest {
         ResultSet rs = stmt.executeQuery(objToQuery(list));
         for (int i = 0; i < list.length; i++) {
             rs.next();
-            assert (rs.getString(i + 1).equals(list[i]));
+            assert (rs.getString(1).equals(list[i]));
         }
         assert (!rs.next());
     }
