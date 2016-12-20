@@ -13,11 +13,11 @@ import java.util.Map;
  * ResultSet that gets the data from a double dimension array
  */
 public class ArrayResultSet implements ResultSet {
-    Object[][] data;
-    Map<String, Integer> names;
-    int[] types;
+    private Object[][] data;
+    private Map<String, Integer> names;
+    private int[] types;
 
-    int index = -1;
+    private int index = -1;
 
     public ArrayResultSet(Object[][] data, String[] columnNames) throws SQLException {
         this.data = data;
@@ -25,11 +25,21 @@ public class ArrayResultSet implements ResultSet {
         this.types = new int[columnNames.length];
         if (data.length > 0) {
             for (int i = 0; i < columnNames.length; i++) {
-                types[i] = RawDatabaseMetaData.objToType(data[0][i]);
+                Object obj = firstNotNull(data, i);
+                types[i] = RawDatabaseMetaData.objToType(obj);
             }
         } else {
             throw new SQLException("Could not guess type of empty object");
         }
+    }
+
+    private static Object firstNotNull(Object[][]data, int col){
+        for(Object[] row: data){
+            if(row != null && row[col] != null){
+                return row[col];
+            }
+        }
+        return null;
     }
 
     public ArrayResultSet(Object[][] data, String columnNames[], int[] types) throws SQLException {
@@ -39,7 +49,7 @@ public class ArrayResultSet implements ResultSet {
 
     }
 
-    public ArrayResultSet(Object[][] data, String columnNames[], Object[] objects) throws SQLException {
+    ArrayResultSet(Object[][] data, String columnNames[], Object[] objects) throws SQLException {
         this.data = data;
         this.names = getNames(columnNames);
         types = new int[columnNames.length];

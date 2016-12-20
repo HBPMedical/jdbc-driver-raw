@@ -1,11 +1,9 @@
 package raw.jdbc.rawclient;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -17,16 +15,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import raw.jdbc.rawclient.requests.*;
 
 public class RawRestClient {
+    private static Logger logger = Logger.getLogger(RawRestClient.class.getName());
+    private static ObjectMapper mapper = new ObjectMapper();
 
     private static final String JSON_CONTENT = "application/json";
     private static final int HTTP_OK = 200;
-    private static final int BAD_REQUEST = 400;
-    private static final int UNAUTHORIZED = 401;
-    private static final int FORBIDEN = 403;
-    private static final int INTERNAL_SERVER_ERROR = 501;
-
-    private static Logger logger = Logger.getLogger(RawRestClient.class.getName());
-    private static ObjectMapper mapper = new ObjectMapper();
 
     private HttpClient client = HttpClientBuilder.create().build();
     private String executerUrl;
@@ -66,16 +59,14 @@ public class RawRestClient {
             throw new RawClientException("Token request failed with code " + code);
         }
         String jsonStr = getJsonContent(response);
-        TokenResponse oauthToken = mapper.readValue(jsonStr, TokenResponse.class);
-        return oauthToken;
+        return mapper.readValue(jsonStr, TokenResponse.class);
     }
 
     public String getVersion() throws IOException {
         HttpResponse response = doGet("/version");
         String contentType = response.getEntity().getContentType().getValue();
         assert (contentType.contains("text/plain"));
-        String data = EntityUtils.toString(response.getEntity());
-        return data;
+        return EntityUtils.toString(response.getEntity());
     }
 
     public SchemaInfo[] getSchemaInfo() throws IOException {
@@ -91,46 +82,12 @@ public class RawRestClient {
     public int asyncQueryStart(String query) throws IOException {
         AsyncQueryRequest request = new AsyncQueryRequest();
         request.query = query;
-        String json = mapper.writeValueAsString(request);
-        HttpResponse response = doJsonPost("/async-query-start", json);
-        checkQueryError(response);
-        AsyncQueryResponse data = getObjFromResponse(response, AsyncQueryResponse.class);
+        AsyncQueryResponse data = doJsonPost("/async-query-start", request, AsyncQueryResponse.class);
         return data.queryId;
     }
 
-    public void checkQueryError(HttpResponse response) throws IOException {
-        int code = response.getStatusLine().getStatusCode();
-        if (code == BAD_REQUEST) {
-            QueryErrorResponse errorResponse = getObjFromResponse(response, QueryErrorResponse.class);
-            StringBuilder msg = new StringBuilder(errorResponse.errorType + ": ");
-            Map error = errorResponse.error;
-            if (error.containsKey("prettyMessage")) {
-                msg.append(error.get("prettyMessage"));
-            } else if (error.containsKey("errors")) {
-                for (Object e : (ArrayList<Object>) error.get("errors")) {
-                    LinkedHashMap map = (LinkedHashMap<String, Object>) e;
-                    msg.append("\n\t");
-                    msg.append(map.get("errorType") + ": ");
-                    msg.append(map.get("prettyMessage"));
-                }
-            } else {
-                msg.append(getJsonContent(response));
-            }
-            throw new RawClientException(msg.toString());
-        } else if (code == INTERNAL_SERVER_ERROR) {
-            GenericErrorResponse error = getObjFromResponse(response, GenericErrorResponse.class);
-            throw new RawClientException(error.exceptionType + ": " + error.message);
-        } else if (code != HTTP_OK) {
-            throw new RawClientException("async-query-start request failed with code " + code +
-                    " response: " +  EntityUtils.toString(response.getEntity())
-            );
-        }
-    }
-
-    AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
-        AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
-        data.queryId = request.queryId;
-        return data;
+    private AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
+        return doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
     }
 
     public AsyncQueryNextResponse asyncQueryNext(int queryId, int numberOfResults) throws IOException {
@@ -143,7 +100,7 @@ public class RawRestClient {
     public void asyncQueryClose(int queryId) throws IOException {
         AsyncQueryCloseRequest request = new AsyncQueryCloseRequest();
         request.queryId = queryId;
-        AsyncQueryCloseResponse data = doJsonPost("/async-query-close", request, AsyncQueryCloseResponse.class);
+        doJsonPost("/async-query-close", request, AsyncQueryCloseResponse.class);
     }
 
     public AsyncQueryNextResponse pollQuery(String query, int numberOfResults) throws IOException {
@@ -151,27 +108,20 @@ public class RawRestClient {
         AsyncQueryNextRequest request = new AsyncQueryNextRequest();
         request.queryId = queryId;
         request.numberResults = numberOfResults;
-        logger.fine("polling queryId: " + queryId);
+        //TODO: Add some sort of timeout for query execution
         while (true) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
                 throw new RawClientException("sleep interruped while polling " + e.getMessage());
             }
-            AsyncQueryNextResponse data = asynQueryNext(request);
-            logger.fine("polling response, size: " + data.size + " hasMore: " + data.hasMore);
+            AsyncQueryNextResponse data = asyncQueryNext(request);
             if (data.size > 0) {
                 logger.fine("got results: compilation time: " + data.compilationTime +
                         " execution time: " + data.executionTime);
                 return data;
             }
         }
-    }
-
-    AsyncQueryNextResponse asynQueryNext(AsyncQueryNextRequest request) throws IOException {
-        AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
-        data.queryId = request.queryId;
-        return data;
     }
 
     public QueryBlockResponse queryStart(String query, int resultsPerPage) throws IOException {
@@ -206,12 +156,6 @@ public class RawRestClient {
         return EntityUtils.toString(response.getEntity());
     }
 
-    private <T> T getObjFromResponse(HttpResponse response, Class<T> tClass) throws IOException {
-        String json = getJsonContent(response);
-        T obj = mapper.readValue(json, tClass);
-        return obj;
-    }
-
     private HttpResponse doJsonPost(String path, String json) throws IOException {
         HttpPost post = new HttpPost(executerUrl + path);
         post.setHeader("Authorization", "Bearer " + credentials.access_token);
@@ -227,10 +171,16 @@ public class RawRestClient {
         int code = response.getStatusLine().getStatusCode();
         if (code != HTTP_OK) {
             String content = EntityUtils.toString(response.getEntity());
-            throw new RawClientException(path + " request failed with code " + code +
-                    " content: " + content);
+            try {
+                GenericErrorResponse error = mapper.readValue(content, GenericErrorResponse.class);
+                throw new RawClientException(error.errorType + ": " + error.errorDescription);
+            } catch (JsonParseException e) {
+                throw new RawClientException(path + " request failed with code " + code +
+                        " content: " + content);
+            }
         }
-        return getObjFromResponse(response, responseClass);
+        String data = getJsonContent(response);
+        return mapper.readValue(data, responseClass);
     }
 
     private HttpResponse doGet(String path) throws IOException {

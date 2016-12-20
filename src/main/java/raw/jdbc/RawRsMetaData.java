@@ -6,8 +6,8 @@ import java.util.logging.Logger;
 
 public class RawRsMetaData implements ResultSetMetaData {
 
-    protected String[] columnNames;
-    protected int[] types;
+    private String[] columnNames;
+    private int[] types;
     static Logger logger = Logger.getLogger(RawRsMetaData.class.getName());
 
     RawRsMetaData(String[] names, int[] types) throws SQLException {

@@ -9,8 +9,8 @@ import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
 
-public class RawPreparedStatement extends RawStatement implements PreparedStatement {
-    String sql;
+class RawPreparedStatement extends RawStatement implements PreparedStatement {
+    private String sql;
 
     RawPreparedStatement(RawRestClient client, RawConnection parent, String sql) {
         super(client, parent);

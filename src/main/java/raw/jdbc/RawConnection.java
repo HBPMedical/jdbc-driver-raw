@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-public class RawConnection implements Connection {
+class RawConnection implements Connection {
     private RawRestClient client;
     private String url;
     private String username;

@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 public class RawResultSet implements ResultSet {
     private RawRestClient client;
 
-    AsyncQueryNextResponse query;
+    private AsyncQueryNextResponse query;
 
     private boolean isRecord = false;
     private String[] columnNames;
@@ -30,29 +30,37 @@ public class RawResultSet implements ResultSet {
     private int resultsPerPage = 1000;
     public static final String SINGLE_ELEM_LABEL = "element";
 
-    static Logger logger = Logger.getLogger(RawResultSet.class.getName());
+    private static Logger logger = Logger.getLogger(RawResultSet.class.getName());
 
     RawResultSet(RawRestClient client, String sql, RawStatement parent) throws SQLException {
         this.client = client;
         this.statement = parent;
         try {
-            query = client.pollQuery(sql, resultsPerPage);
-            if (query.data.size() > 0) {
-                Object obj = query.data.get(0);
-                if (obj.getClass() == LinkedHashMap.class) {
+            this.query = client.pollQuery(sql, resultsPerPage);
+            if (this.query.data.size() > 0) {
+                Object obj = firstNotNull(this.query.data);
+                if (obj != null && obj.getClass() == LinkedHashMap.class) {
                     this.isRecord = true;
                     Map<String, Object> map = (Map) obj;
-                    columnNames = map.keySet().toArray(new String[]{});
+                    this.columnNames = map.keySet().toArray(new String[]{});
                 } else {
                     this.isRecord = false;
-                    columnNames = new String[]{SINGLE_ELEM_LABEL};
+                    this.columnNames = new String[]{SINGLE_ELEM_LABEL};
                 }
             }
             logger.fine("initialized query token: " + query.queryId + " hasMore: " + query.hasMore);
         } catch (IOException e) {
             throw new SQLException("could not start query: " + e.getMessage());
         }
+    }
 
+    private static Object firstNotNull(Iterable<Object> list) {
+        for (Object obj : list) {
+            if (obj != null) {
+                return obj;
+            }
+        }
+        return null;
     }
 
     public boolean isBeforeFirst() throws SQLException {
@@ -218,7 +226,9 @@ public class RawResultSet implements ResultSet {
      */
     private <T> T castToType(Object obj, Class<T> tClass) {
         try {
-            if (tClass == String.class) {
+            if(obj == null){
+                return null;
+            }else if (tClass == String.class) {
                 return (T) obj.toString();
             } else if (tClass == Float.class) {
                 return (T) new Float((Double) obj);
@@ -381,18 +391,27 @@ public class RawResultSet implements ResultSet {
         if (query.data.size() > 0) {
             int[] types = new int[columnNames.length];
             if (isRecord) {
-                Map map = (LinkedHashMap<String, Object>) query.data.get(0);
                 for (int i = 0; i < columnNames.length; i++) {
-                    int t = RawDatabaseMetaData.objToType(map.get(columnNames[i]));
+                    Object obj = firstNotNull(query.data, columnNames[i]);
+                    int t = RawDatabaseMetaData.objToType(obj);
                     types[i] = t;
                 }
             } else {
-                types[0] = RawDatabaseMetaData.objToType(query.data.get(0));
+                types[0] = RawDatabaseMetaData.objToType(firstNotNull(query.data));
             }
             return new RawRsMetaData(columnNames, types);
         } else {
             throw new SQLException("cannot get metadata for empty array");
         }
+    }
+
+    private Object firstNotNull(Iterable<LinkedHashMap<String, Object>> list, String key){
+        for(LinkedHashMap<String, Object> map: list) {
+            if(map !=null && map.get(key) != null){
+                return map.get(key);
+            }
+        }
+        return null;
     }
 
     public Object getObject(int columnIndex) throws SQLException {

@@ -16,13 +16,13 @@ import java.util.regex.Pattern;
  * The raw database metada
  * TODO: Make less hardcoded values (creating services to get the info dynamically from the server?)
  */
-public class RawDatabaseMetaData implements DatabaseMetaData {
+class RawDatabaseMetaData implements DatabaseMetaData {
 
-    String url;
-    String user;
-    RawRestClient client;
-    Connection connecion;
-    SchemaInfo[] schemas;
+    private String url;
+    private String user;
+    private RawRestClient client;
+    private Connection connection;
+    private SchemaInfo[] schemas;
 
     Logger logger = Logger.getLogger(RawDatabaseMetaData.class.getName());
 
@@ -30,15 +30,15 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         this.url = url;
         this.user = user;
         this.client = client;
-        this.connecion = connection;
+        this.connection = connection;
         try {
-            schemas = client.getSchemaInfo();
+            schemas = this.client.getSchemaInfo();
         } catch (IOException e) {
             throw new SQLException("could not get schema info " + e.getMessage());
         }
     }
 
-    public static String typeToName(int type) {
+    static String typeToName(int type) {
         switch (type) {
             case Types.INTEGER:
                 return "int";
@@ -59,7 +59,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         }
     }
 
-    public static int nameToType(String name) throws SQLException {
+    static int nameToType(String name) throws SQLException {
         if (name.equals("int")) {
             return Types.INTEGER;
         } else if (name.equals("long")) {
@@ -92,7 +92,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         }
     }
 
-    public static int objToType(Object obj) throws SQLException {
+    static int objToType(Object obj) throws SQLException {
         if (obj == null) {
             //return Types.NULL;
             return Types.VARCHAR;
@@ -117,7 +117,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         }
     }
 
-    public static boolean isNullable(String type) {
+    private static boolean isNullable(String type) {
         return type.startsWith("option");
     }
 
@@ -657,7 +657,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         throw new SQLFeatureNotSupportedException("not implemented getProcedureColumns");
     }
 
-    SchemaInfo[] findTable(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
+    private SchemaInfo[] findTable(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
         ArrayList<SchemaInfo> out = new ArrayList<SchemaInfo>();
         for (SchemaInfo info : schemas) {
             if (stringMatch(info.name, tableNamePattern)) {
@@ -671,7 +671,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         return out.toArray(new SchemaInfo[]{});
     }
 
-    public static boolean stringMatch(String value, String pattern) {
+    private static boolean stringMatch(String value, String pattern) {
         if (pattern != null) {
             String regex = pattern.replaceAll("%", ".*");
             return Pattern.matches(regex, value);
@@ -999,7 +999,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public Connection getConnection() throws SQLException {
-        return this.connecion;
+        return this.connection;
     }
 
     public boolean supportsSavepoints() throws SQLException {
