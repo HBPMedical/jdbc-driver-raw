@@ -140,12 +140,6 @@ public class RawResultSet implements ResultSet {
             Map<String, Object> map = (Map) obj;
             return castToType(map.get(columnNames[idx]), tClass);
             //TODO: check if this is allowed
-        } else if (obj.getClass().isArray()) {
-            Object[] ary = (Object[]) obj;
-            return castToType(ary[idx], tClass);
-        } else if (obj.getClass() == ArrayList.class) {
-            ArrayList<Object> ary = (ArrayList) obj;
-            return castToType(ary.get(idx), tClass);
         } else if (idx != 0) {
             throw new IndexOutOfBoundsException("Row is not record or collection to get column index > 1");
         } else {

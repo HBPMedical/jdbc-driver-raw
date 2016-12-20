@@ -42,42 +42,30 @@ public class TestQueries extends RawTest {
     }
 
     @Test
-    public void testIntTable() throws SQLException {
+    public void testIntList() throws SQLException {
         Statement stmt = conn.createStatement();
 
-        Integer[][] table = {
-                {1, 2, 3, 4},
-                {4, 5, 6, 7},
-                {8, 9, 10, 11},
-        };
+        Integer[] list = {1, 2, 3};
 
-        ResultSet rs = stmt.executeQuery(objToQuery(table));
-        for (int i = 0; i < table.length; i++) {
+        ResultSet rs = stmt.executeQuery(objToQuery(list));
+        for (int i = 0; i < list.length; i++) {
             rs.next();
-            for (int j = 0; j < table[i].length; j++) {
-                assert (rs.getInt(j+1) == table[i][j]);
-            }
+            assert (rs.getInt(i + 1) == list[i]);
         }
     }
 
     @Test
-    public void testStringTable() throws SQLException {
+    public void testStringList() throws SQLException {
         Statement stmt = conn.createStatement();
 
-        String[][] table = {
-                {"1", "2", "3", "4"},
-                {"4", "5", "6", "7"},
-                {"8", "9", "10", "11"},
-        };
+        String[] list =  new String[] {"1", "2", "3", "4"};
 
-        ResultSet rs = stmt.executeQuery(objToQuery(table));
-        for (int i = 0; i < table.length; i++) {
+        ResultSet rs = stmt.executeQuery(objToQuery(list));
+        for (int i = 0; i < list.length; i++) {
             rs.next();
-            for (int j = 0; j < table[i].length; j++) {
-                assert (rs.getString(j+1).equals(table[i][j]));
-            }
+            assert (rs.getString(i + 1).equals(list[i]));
         }
-        assert(!rs.next());
+        assert (!rs.next());
     }
 
     @Test
