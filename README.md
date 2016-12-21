@@ -32,4 +32,4 @@ Configuration example for squirrel-sql:
 * Example URL: "jdbc:raw:http://localhost:54321"
 * Class Name: "raw.jdbc.RawDriver"
 
--You will need to add the generated jar file as an extra class path in the dialog window for registering the driver.
+You will need to add the generated jar file as an extra class path in the dialog window for registering the driver.
