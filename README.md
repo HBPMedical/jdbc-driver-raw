@@ -1,7 +1,7 @@
 # JDBC driver for raw-db
 
 To build use the following command:
--DskipTests
+`mvn package -DskipTests`
 
 you will find the jar file in:
 ./target/jdbc-driver-raw-jar-with-dependencies.jar
