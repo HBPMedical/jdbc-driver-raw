@@ -11,7 +11,7 @@ you will find the jar file in:
 
 ## JDBC URL
 The jdbc url format:
-jdbc:raw:<execute url>?auth_url=<oauth2 server>
+jdbc:raw:\<executor url\>?auth_url=\<oauth2 server\>
 
 So for instance if your executer url is : 
 
