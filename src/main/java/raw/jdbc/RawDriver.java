@@ -80,14 +80,15 @@ public class RawDriver implements Driver {
             if (uri.getPort() > 0) {
                 executor += ":" + uri.getPort();
             }
-
+            executor += uri.getPath();
             properties.setProperty(EXEC_PROPERTY, executor);
+
             String userinfo = uri.getUserInfo();
             if (userinfo != null) {
                 int idx = userinfo.indexOf(':');
                 String username;
                 if (idx > 0) {
-                    username = URLDecoder.decode(userinfo.substring(0, idx),"UTF-8");
+                    username = URLDecoder.decode(userinfo.substring(0, idx), "UTF-8");
                     String password = URLDecoder.decode(userinfo.substring(idx + 1), "UTF-8");
                     properties.setProperty(PASSWD_PROPERTY, password);
                 } else {

@@ -15,7 +15,9 @@ public class TestClient extends RawTest {
     public TestClient() throws IOException {
         super();
         TokenResponse token = RawRestClient.getPasswdGrantToken(authServer, credentials);
+        logger.fine("got token " + token.access_token);
         client = new RawRestClient(conf.getProperty("executor"), token);
+
     }
 
     @Test

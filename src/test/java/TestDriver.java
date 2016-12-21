@@ -80,4 +80,18 @@ public class TestDriver extends RawTest {
         Driver driver = DriverManager.getDriver(url);
         assert(driver.getClass() == RawDriver.class);
     }
+
+    @Test
+    public void testNonEncodedAuthServer() throws SQLException {
+        String authUrl = "https://just-ask.raw-labs.com/oauth2/access_token";
+        String executorUrl = "https://just-ask.raw-labs.com:54321/executer";
+        RawDriver.register();
+        String url = "jdbc:raw:"+ executorUrl + "?auth_url="+ authUrl;
+
+
+        Properties info = RawDriver.parseUrl(url);
+        assert(info.getProperty("auth_url").equals(authUrl));
+        logger.fine("executor url: " + info.getProperty("executor"));
+        assert(info.getProperty("executor").equals(executorUrl));
+    }
 }

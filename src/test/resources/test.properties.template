@@ -1,6 +1,6 @@
 # oauth
 #edit the properties bellow with the credentials for testing
-auth_server=http://localhost:9000/oauth2/access_token
+auth_url=http://localhost:9000/oauth2/access_token
 executor=http://localhost:54321
 user=some_user
 password=some_password
