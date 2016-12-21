@@ -1,5 +1,6 @@
 # JDBC driver for raw-db
 
+## Generating a jar
 To build use the following command:
 
 `mvn package -DskipTests`
@@ -8,6 +9,7 @@ you will find the jar file in:
 
 ./target/jdbc-driver-raw-jar-with-dependencies.jar
 
+## JDBC URL
 The jdbc url format:
 jdbc:raw:<execute url>?auth_url=<oauth2 server>
 
