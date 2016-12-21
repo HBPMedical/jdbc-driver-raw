@@ -1,11 +1,11 @@
 # JDBC driver for raw-db
 
 ## Generating a jar
-To build use the following command:
+To generate a jar file use the following command:
 
 `mvn package -DskipTests`
 
-you will find the jar file in:
+You will find the jar file in:
 
 ./target/jdbc-driver-raw-jar-with-dependencies.jar
 
@@ -13,9 +13,9 @@ you will find the jar file in:
 The jdbc url format:
 jdbc:raw:\<executor url\>[?auth_url=\<oauth2 url\>]
 
-if the oauth2 url is not specified defaults to: http://localhost:9000/oauth2/access_token
+If the oauth2 url is not specified defaults to: http://localhost:9000/oauth2/access_token
 
-So for instance if your executer url is : 
+So if your executer url is : 
 
 https://just-ask.raw-labs.com/executer
 
@@ -32,4 +32,4 @@ Configuration example for squirrel-sql:
 * Example URL: "jdbc:raw:http://localhost:54321"
 * Class Name: "raw.jdbc.RawDriver"
 
-
+-You will need to add the generated jar file as an extra class path in the dialog window for registering the driver.
