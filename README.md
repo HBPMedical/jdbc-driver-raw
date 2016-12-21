@@ -5,6 +5,7 @@ To build use the following command:
 `mvn package -DskipTests`
 
 you will find the jar file in:
+
 ./target/jdbc-driver-raw-jar-with-dependencies.jar
 
 Configuration example for squirrel-sql:
