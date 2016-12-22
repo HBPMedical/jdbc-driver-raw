@@ -1,6 +1,8 @@
 # JDBC driver for raw-db
 
 ## Generating a jar
+You will need to have maven installed in order to build this project.
+
 To generate a jar file use the following command:
 
 `mvn package -DskipTests`
