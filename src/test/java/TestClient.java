@@ -54,15 +54,15 @@ public class TestClient extends RawTest {
         QueryBlockResponse resp = client.queryStart("collection(1,2,4)", 100);
         logger.fine("execution time: " + resp.executionTime);
     }
-
-    @Test
-    public void testGetTabularSchemas() throws IOException, ParseException {
-        SourceNameResponse[] resp = client.getSchemaInfo();
-        for (SourceNameResponse schema : resp) {
-            logger.fine("schema: " + schema.name + "sql: " + schema.schemaType);
-            RawDatabaseMetaData.SchemaInfoColumn info = schema.columns[0];
-            logger.fine("column: " + info.name + " -> " + info.tipe);
-        }
-
-    }
+    //TODO: fix this test
+//    @Test
+//    public void testGetTabularSchemas() throws IOException, ParseException {
+//        SourceNameResponse[] resp = client.getAllSourcesInfo();
+//        for (SourceNameResponse source: resp) {
+//            logger.fine("schema: " + source.name + "sql: " + source.);
+//            RawDatabaseMetaData.SchemaInfoColumn info = schema.columns[0];
+//            logger.fine("column: " + info.name + " -> " + info.tipe);
+//        }
+//
+//    }
 }

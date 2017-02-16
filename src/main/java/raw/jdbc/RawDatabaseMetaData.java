@@ -2,6 +2,7 @@ package raw.jdbc;
 
 import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.SourceNameResponse;
+
 import java.util.ArrayList;
 
 import java.io.IOException;
@@ -11,13 +12,14 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * The raw database metada
  * TODO: Make less hardcoded values (creating services to get the info dynamically from the server?)
  */
-class RawDatabaseMetaData implements DatabaseMetaData {
+public class RawDatabaseMetaData implements DatabaseMetaData {
 
     public static class SchemaInfoColumn {
         public String name;
@@ -47,7 +49,7 @@ class RawDatabaseMetaData implements DatabaseMetaData {
         try {
             schemas = new ArrayList<Schema>();
             ArrayList<SourceNameResponse> sources = this.client.getAllSourcesInfo();
-            for(SourceNameResponse s: sources){
+            for (SourceNameResponse s : sources) {
                 schemas.add(sourceResponseToSchema(s));
             }
         } catch (IOException e) {
@@ -63,9 +65,9 @@ class RawDatabaseMetaData implements DatabaseMetaData {
         String outerType = (String) source.tipe.get("type");
         if (outerType == "collection") {
             LinkedHashMap<String, Object> innerType = (LinkedHashMap<String, Object>) source.tipe.get("innerType");
-            if (innerType.equals("record")){
+            if (innerType.equals("record")) {
                 ArrayList<SchemaInfoColumn> columns = columnsFromRecord(innerType);
-                out.columns = columns.toArray(new SchemaInfoColumn[]{} );
+                out.columns = columns.toArray(new SchemaInfoColumn[]{});
             } else {
                 SchemaInfoColumn info = new SchemaInfoColumn();
                 info.name = "element";
@@ -80,10 +82,10 @@ class RawDatabaseMetaData implements DatabaseMetaData {
         return out;
     }
 
-    static ArrayList<SchemaInfoColumn> columnsFromRecord(LinkedHashMap<String, Object> record){
+    static ArrayList<SchemaInfoColumn> columnsFromRecord(LinkedHashMap<String, Object> record) throws SQLException {
         ArrayList<LinkedHashMap<String, Object>> atts = (ArrayList<LinkedHashMap<String, Object>>) record.get("atts");
         ArrayList<SchemaInfoColumn> columns = new ArrayList<SchemaInfoColumn>();
-        for(LinkedHashMap<String, Object> attr: atts){
+        for (LinkedHashMap<String, Object> attr : atts) {
             SchemaInfoColumn info = new SchemaInfoColumn();
             info.name = (String) attr.get("idn");
             info.tipe = printType((LinkedHashMap<String, Object>) attr.get("type"));
@@ -91,16 +93,17 @@ class RawDatabaseMetaData implements DatabaseMetaData {
         }
         return columns;
     }
-    static String printType(LinkedHashMap<String, Object> tipe){
+
+    static String printType(LinkedHashMap<String, Object> tipe) throws SQLException {
         String name = (String) tipe.get("type");
         if (name.equals("int") ||
-                name.equals("long")||
-                name.equals("string")||
-                name.equals("double")||
-                name.equals("float")||
-                name.equals("date")||
-                name.equals("date")||
-                name.equals("datetime")||
+                name.equals("long") ||
+                name.equals("string") ||
+                name.equals("double") ||
+                name.equals("float") ||
+                name.equals("date") ||
+                name.equals("date") ||
+                name.equals("datetime") ||
                 name.equals("boolean")) {
             return name;
         } else if (name.equals("collection")) {
@@ -109,15 +112,18 @@ class RawDatabaseMetaData implements DatabaseMetaData {
         } else if (name.equals("record")) {
             ArrayList<SchemaInfoColumn> columns = columnsFromRecord(tipe);
             ArrayList<String> attributes = new ArrayList<String>();
-            for(SchemaInfoColumn info: columns){
+            for (SchemaInfoColumn info : columns) {
                 attributes.add(info.name + ":" + info.tipe);
             }
             return "collection(" + StringUtils.join(attributes, ',') + ")";
         } else if (name.equals("option")) {
             LinkedHashMap<String, Object> innerType = (LinkedHashMap<String, Object>) tipe.get("t");
-            return "option("+innerType+")";
+            return "option(" + innerType + ")";
+        } else {
+            throw new SQLException("Unknown type " + name);
         }
     }
+
     static String typeToName(int type) {
         switch (type) {
             case Types.INTEGER:
@@ -777,11 +783,11 @@ class RawDatabaseMetaData implements DatabaseMetaData {
                 "REF_GENERATION"
         };
 
-        SourceNameResponse[] matches = findTable(catalog, schemaPattern, tableNamePattern, types);
+        Schema[] matches = findTable(catalog, schemaPattern, tableNamePattern, types);
         String[][] data = new String[matches.length][];
         for (int i = 0; i < matches.length; i++) {
             data[i] = new String[]{
-                    user, matches[i].name, matches[i].name, matches[i].schemaType, "user table",
+                    user, matches[i].name, matches[i].name, matches[i].type, "user table",
                     null, null, null, null, null};
         }
         int[] mdTypes = new int[]{Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
@@ -857,10 +863,10 @@ class RawDatabaseMetaData implements DatabaseMetaData {
                 //empty string --- if it cannot be determined whether this is a generated column
         };
 
-        SourceNameResponse[] matches = findTable(catalog, schemaPattern, tableNamePattern, null);
+        Schema[] matches = findTable(catalog, schemaPattern, tableNamePattern, null);
 
         ArrayList<Object[]> data = new ArrayList<Object[]>();
-        for (SourceNameResponse info : matches) {
+        for (Schema info : matches) {
 
             for (int i = 0; i < info.columns.length; i++) {
                 SchemaInfoColumn col = info.columns[i];
