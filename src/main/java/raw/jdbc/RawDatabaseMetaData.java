@@ -39,7 +39,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     private Connection connection;
     private ArrayList<Schema> schemas;
 
-    Logger logger = Logger.getLogger(RawDatabaseMetaData.class.getName());
+    static Logger logger = Logger.getLogger(RawDatabaseMetaData.class.getName());
 
     RawDatabaseMetaData(String url, String user, RawRestClient client, Connection connection) throws SQLException {
         this.url = url;
@@ -48,7 +48,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         this.connection = connection;
         try {
             schemas = new ArrayList<Schema>();
-            ArrayList<SourceNameResponse> sources = this.client.getAllSourcesInfo();
+            SourceNameResponse[] sources = this.client.getSources();
             for (SourceNameResponse s : sources) {
                 schemas.add(sourceResponseToSchema(s));
             }
@@ -63,15 +63,17 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         out.catalog = "";
         out.type = "source";
         String outerType = (String) source.tipe.get("type");
-        if (outerType == "collection") {
-            LinkedHashMap<String, Object> innerType = (LinkedHashMap<String, Object>) source.tipe.get("innerType");
+        if (outerType.equals("collection")) {
+            LinkedHashMap<String, Object> obj = (LinkedHashMap<String, Object>) source.tipe.get("innerType");
+            String innerType = (String) obj.get("type");
             if (innerType.equals("record")) {
-                ArrayList<SchemaInfoColumn> columns = columnsFromRecord(innerType);
+                logger.fine("transforming: " + innerType);
+                ArrayList<SchemaInfoColumn> columns = columnsFromRecord(obj);
                 out.columns = columns.toArray(new SchemaInfoColumn[]{});
             } else {
                 SchemaInfoColumn info = new SchemaInfoColumn();
                 info.name = "element";
-                info.tipe = printType(innerType);
+                info.tipe = printType(obj);
                 out.columns = new SchemaInfoColumn[]{info};
             }
 
@@ -88,7 +90,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         for (LinkedHashMap<String, Object> attr : atts) {
             SchemaInfoColumn info = new SchemaInfoColumn();
             info.name = (String) attr.get("idn");
-            info.tipe = printType((LinkedHashMap<String, Object>) attr.get("type"));
+            info.tipe = printType((LinkedHashMap<String, Object>) attr.get("tipe"));
             columns.add(info);
         }
         return columns;
@@ -96,6 +98,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     static String printType(LinkedHashMap<String, Object> tipe) throws SQLException {
         String name = (String) tipe.get("type");
+
         if (name.equals("int") ||
                 name.equals("long") ||
                 name.equals("string") ||

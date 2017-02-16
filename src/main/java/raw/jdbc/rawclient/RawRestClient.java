@@ -76,16 +76,6 @@ public class RawRestClient {
         return data;
     }
 
-    public ArrayList<SourceNameResponse> getAllSourcesInfo() throws IOException {
- //        String[] sources = getSources();
-//        ArrayList out = new ArrayList<SourceNameResponse>();
-//        for (String name: sources ) {
-//            out.add(getSourceInfo(name));
-//        }
-//        return out;
-        ArrayList<SourceNameResponse> out = new ArrayList<SourceNameResponse>();
-        for (SchemasResponse s: )
-    }
 
     public SourceNameResponse[] getSources() throws IOException {
         SourceNameResponse[] data = doGet("/sources",SourceNameResponse[].class);

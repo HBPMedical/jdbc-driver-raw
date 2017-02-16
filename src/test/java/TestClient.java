@@ -27,9 +27,9 @@ public class TestClient extends RawTest {
 
     @Test
     public void testSchemas() throws IOException, ParseException {
-        String[] schemas = client.getSources();
-        for (String s : schemas) {
-            System.out.println("got schema: " + s);
+        SourceNameResponse[] schemas = client.getSources();
+        for (SourceNameResponse s : schemas) {
+            System.out.println("got schema: " + s.name);
         }
     }
 
