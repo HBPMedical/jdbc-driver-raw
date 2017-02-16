@@ -1,5 +1,6 @@
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
+import raw.jdbc.RawDatabaseMetaData;
 import raw.jdbc.rawclient.requests.*;
 import raw.jdbc.rawclient.RawRestClient;
 
@@ -26,7 +27,7 @@ public class TestClient extends RawTest {
 
     @Test
     public void testSchemas() throws IOException, ParseException {
-        String[] schemas = client.getSchemas();
+        String[] schemas = client.getSources();
         for (String s : schemas) {
             System.out.println("got schema: " + s);
         }
@@ -56,10 +57,10 @@ public class TestClient extends RawTest {
 
     @Test
     public void testGetTabularSchemas() throws IOException, ParseException {
-        SourceInfo[] resp = client.getSchemaInfo();
-        for (SourceInfo schema : resp) {
+        SourceNameResponse[] resp = client.getSchemaInfo();
+        for (SourceNameResponse schema : resp) {
             logger.fine("schema: " + schema.name + "sql: " + schema.schemaType);
-            SchemaInfoColumn info = schema.columns[0];
+            RawDatabaseMetaData.SchemaInfoColumn info = schema.columns[0];
             logger.fine("column: " + info.name + " -> " + info.tipe);
         }
 

@@ -1,6 +1,7 @@
 package raw.jdbc.rawclient;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -13,6 +14,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import raw.jdbc.rawclient.requests.*;
+import java.util.ArrayList;
 
 public class RawRestClient {
     private static Logger logger = Logger.getLogger(RawRestClient.class.getName());
@@ -69,13 +71,22 @@ public class RawRestClient {
         return EntityUtils.toString(response.getEntity());
     }
 
-    public SourceInfo[] getSourceInfo(String name) throws IOException {
-        SchemaInfoResponse data = doGet("/schema-info", SchemaInfoResponse.class);
-        return data.schemas;
+    public SourceNameResponse getSourceInfo(String name) throws IOException {
+        SourceNameResponse data = doGet("/sources/" + name, SourceNameResponse.class);
+        return data;
     }
 
-    public String[] getSchemas() throws IOException {
-        String[] data = doGet("/schemas", String[].class);
+    public ArrayList<SourceNameResponse> getAllSourcesInfo() throws IOException {
+        String[] sources = getSources();
+        ArrayList out = new ArrayList<SourceNameResponse>();
+        for (String name: sources ) {
+            out.add(getSourceInfo(name));
+        }
+        return out;
+    }
+
+    public String[] getSources() throws IOException {
+        String[] data = doGet("/sources", String[].class);
         return data;
     }
 
