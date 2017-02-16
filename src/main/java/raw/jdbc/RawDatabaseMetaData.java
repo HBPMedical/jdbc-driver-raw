@@ -1,7 +1,7 @@
 package raw.jdbc;
 
 import raw.jdbc.rawclient.RawRestClient;
-import raw.jdbc.rawclient.requests.SchemaInfo;
+import raw.jdbc.rawclient.requests.SourceInfo;
 import raw.jdbc.rawclient.requests.SchemaInfoColumn;
 
 import java.io.IOException;
@@ -22,7 +22,7 @@ class RawDatabaseMetaData implements DatabaseMetaData {
     private String user;
     private RawRestClient client;
     private Connection connection;
-    private SchemaInfo[] schemas;
+    private SourceInfo[] schemas;
 
     Logger logger = Logger.getLogger(RawDatabaseMetaData.class.getName());
 
@@ -657,9 +657,9 @@ class RawDatabaseMetaData implements DatabaseMetaData {
         throw new SQLFeatureNotSupportedException("not implemented getProcedureColumns");
     }
 
-    private SchemaInfo[] findTable(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
-        ArrayList<SchemaInfo> out = new ArrayList<SchemaInfo>();
-        for (SchemaInfo info : schemas) {
+    private SourceInfo[] findTable(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
+        ArrayList<SourceInfo> out = new ArrayList<SourceInfo>();
+        for (SourceInfo info : schemas) {
             if (stringMatch(info.name, tableNamePattern)) {
                 if (types == null) {
                     out.add(info);
@@ -668,7 +668,7 @@ class RawDatabaseMetaData implements DatabaseMetaData {
                 }
             }
         }
-        return out.toArray(new SchemaInfo[]{});
+        return out.toArray(new SourceInfo[]{});
     }
 
     private static boolean stringMatch(String value, String pattern) {
@@ -695,7 +695,7 @@ class RawDatabaseMetaData implements DatabaseMetaData {
                 "REF_GENERATION"
         };
 
-        SchemaInfo[] matches = findTable(catalog, schemaPattern, tableNamePattern, types);
+        SourceInfo[] matches = findTable(catalog, schemaPattern, tableNamePattern, types);
         String[][] data = new String[matches.length][];
         for (int i = 0; i < matches.length; i++) {
             data[i] = new String[]{
@@ -775,10 +775,10 @@ class RawDatabaseMetaData implements DatabaseMetaData {
                 //empty string --- if it cannot be determined whether this is a generated column
         };
 
-        SchemaInfo[] matches = findTable(catalog, schemaPattern, tableNamePattern, null);
+        SourceInfo[] matches = findTable(catalog, schemaPattern, tableNamePattern, null);
 
         ArrayList<Object[]> data = new ArrayList<Object[]>();
-        for (SchemaInfo info : matches) {
+        for (SourceInfo info : matches) {
 
             for (int i = 0; i < info.columns.length; i++) {
                 SchemaInfoColumn col = info.columns[i];

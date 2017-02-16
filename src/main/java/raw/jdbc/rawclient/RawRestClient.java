@@ -69,14 +69,14 @@ public class RawRestClient {
         return EntityUtils.toString(response.getEntity());
     }
 
-    public SchemaInfo[] getSchemaInfo() throws IOException {
+    public SourceInfo[] getSourceInfo(String name) throws IOException {
         SchemaInfoResponse data = doGet("/schema-info", SchemaInfoResponse.class);
         return data.schemas;
     }
 
     public String[] getSchemas() throws IOException {
-        SchemasResponse data = doGet("/schemas", SchemasResponse.class);
-        return data.schemas;
+        String[] data = doGet("/schemas", String[].class);
+        return data;
     }
 
     public int asyncQueryStart(String query) throws IOException {
@@ -194,6 +194,7 @@ public class RawRestClient {
     private <T> T doGet(String path, Class<T> tClass) throws IOException {
         HttpResponse response = doGet(path);
         String json = getJsonContent(response);
+        logger.fine("got response:\n" + json);
         return mapper.readValue(json, tClass);
     }
 

@@ -1,12 +1,10 @@
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
-import raw.jdbc.ArrayResultSet;
 import raw.jdbc.rawclient.requests.*;
 import raw.jdbc.rawclient.RawRestClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class TestClient extends RawTest {
 
@@ -58,8 +56,8 @@ public class TestClient extends RawTest {
 
     @Test
     public void testGetTabularSchemas() throws IOException, ParseException {
-        SchemaInfo[] resp = client.getSchemaInfo();
-        for (SchemaInfo schema : resp) {
+        SourceInfo[] resp = client.getSchemaInfo();
+        for (SourceInfo schema : resp) {
             logger.fine("schema: " + schema.name + "sql: " + schema.schemaType);
             SchemaInfoColumn info = schema.columns[0];
             logger.fine("column: " + info.name + " -> " + info.tipe);

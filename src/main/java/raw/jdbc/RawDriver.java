@@ -166,7 +166,7 @@ public class RawDriver implements Driver {
         return false;
     }
 
-    public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+    public Logger getParentLogger() {
         return logger.getParent();
     }
 }
