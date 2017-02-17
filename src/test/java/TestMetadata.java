@@ -1,5 +1,6 @@
 import org.junit.Test;
 import raw.jdbc.ArrayResultSet;
+import raw.jdbc.RawDatabaseMetaData;
 import raw.jdbc.RawResultSet;
 import raw.jdbc.RawRsMetaData;
 
@@ -117,9 +118,9 @@ public class TestMetadata extends QueryTypeTest {
 
     @Test
     public void getTableMetadata() throws SQLException {
-        DatabaseMetaData md = conn.getMetaData();
+        RawDatabaseMetaData md = (RawDatabaseMetaData) conn.getMetaData();
 
-        ResultSet rs = md.getTables(null, null, "", null);
+        ResultSet rs = md.getTables(null, null, null, null);
         //TODO: register test files and get the table metadata
         while (rs.next()) {
             logger.fine("table " + rs.getString(3));

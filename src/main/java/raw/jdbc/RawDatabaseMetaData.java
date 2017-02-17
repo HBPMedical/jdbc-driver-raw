@@ -50,6 +50,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
             schemas = new ArrayList<Schema>();
             SourceNameResponse[] sources = this.client.getSources();
             for (SourceNameResponse s : sources) {
+                logger.fine("Metadata adding source: " +s.name);
                 schemas.add(sourceResponseToSchema(s));
             }
         } catch (IOException e) {
@@ -113,10 +114,12 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
             LinkedHashMap<String, Object> innerType = (LinkedHashMap<String, Object>) tipe.get("innerType");
             return "collection(" + printType(innerType) + ")";
         } else if (name.equals("record")) {
-            ArrayList<SchemaInfoColumn> columns = columnsFromRecord(tipe);
+            ArrayList<LinkedHashMap<String, Object>> atts = (ArrayList<LinkedHashMap<String, Object>>) tipe.get("atts");
             ArrayList<String> attributes = new ArrayList<String>();
-            for (SchemaInfoColumn info : columns) {
-                attributes.add(info.name + ":" + info.tipe);
+            for (LinkedHashMap<String, Object> attr : atts) {
+                String attName = (String) attr.get("idn");
+                String attType = printType((LinkedHashMap<String, Object>) attr.get("tipe"));
+                attributes.add(attName + ":" + attType);
             }
             return "collection(" + StringUtils.join(attributes, ',') + ")";
         } else if (name.equals("option")) {
@@ -750,7 +753,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         ArrayList<Schema> out = new ArrayList<Schema>();
         for (Schema info : schemas) {
             if (stringMatch(info.name, tableNamePattern)) {
-                out.add(info);
+                //out.add(info);
                 // TODO: check the other types, like views etc.
                 if (types == null) {
                     out.add(info);
@@ -787,12 +790,16 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         };
 
         Schema[] matches = findTable(catalog, schemaPattern, tableNamePattern, types);
+        logger.fine("matches length: " + matches.length + " schema length: " + schemas.size());
         String[][] data = new String[matches.length][];
         for (int i = 0; i < matches.length; i++) {
+            logger.fine("Adding: " + matches[i].name + ", type:" + matches[i].type);
             data[i] = new String[]{
                     user, matches[i].name, matches[i].name, matches[i].type, "user table",
                     null, null, null, null, null};
+
         }
+
         int[] mdTypes = new int[]{Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR,
                 Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR, Types.VARCHAR};
         return new ArrayResultSet(data, columnNames, mdTypes);
@@ -809,6 +816,7 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         return new ArrayResultSet(data, new String[]{"TABLE_CAT"});
     }
 
+    //TODO: define better the types of columns
     public ResultSet getTableTypes() throws SQLException {
         String[][] data = new String[][]{{"source"}, {"view"}};
         String[] fields = new String[]{"TABLE_TYPE "};
