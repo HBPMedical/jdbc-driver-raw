@@ -26,10 +26,18 @@ public class TestClient extends RawTest {
     }
 
     @Test
-    public void testSchemas() throws IOException, ParseException {
+    public void testSources() throws IOException, ParseException {
         SourceNameResponse[] schemas = client.getSources();
         for (SourceNameResponse s : schemas) {
             System.out.println("got schema: " + s.name);
+        }
+    }
+
+    @Test
+    public void testViews() throws IOException, ParseException {
+        ViewResponse[] schemas = client.getViews();
+        for (ViewResponse s : schemas) {
+            System.out.println("got view: " + s.name);
         }
     }
 

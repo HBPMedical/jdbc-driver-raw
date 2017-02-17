@@ -48,7 +48,7 @@ public class RawResultSet implements ResultSet {
                     this.columnNames = new String[]{SINGLE_ELEM_LABEL};
                 }
             }
-            logger.fine("initialized query token: " + query.queryId + " hasMore: " + query.hasMore);
+            logger.fine("initialized query id: " + query.queryId + " hasMore: " + query.hasMore);
         } catch (IOException e) {
             throw new SQLException("could not start query: " + e.getMessage());
         }
@@ -169,7 +169,11 @@ public class RawResultSet implements ResultSet {
         if (obj != null) {
             if (isRecord) {
                 LinkedHashMap<String, Object> map = (LinkedHashMap) obj;
-                return castToType(map.get(columnLabel), tClass);
+                Object value = map.get(columnLabel);
+                if (value == null) {
+                    throw new SQLException("could not find column label " + columnLabel);
+                }
+                return castToType(value, tClass);
             } else if (columnLabel == SINGLE_ELEM_LABEL) {
                 return castToType(obj, tClass);
             } else {
@@ -226,9 +230,9 @@ public class RawResultSet implements ResultSet {
      */
     private <T> T castToType(Object obj, Class<T> tClass) {
         try {
-            if(obj == null){
+            if (obj == null) {
                 return null;
-            }else if (tClass == String.class) {
+            } else if (tClass == String.class) {
                 return (T) obj.toString();
             } else if (tClass == Float.class) {
                 return (T) new Float((Double) obj);
@@ -405,9 +409,9 @@ public class RawResultSet implements ResultSet {
         }
     }
 
-    private Object firstNotNull(Iterable<LinkedHashMap<String, Object>> list, String key){
-        for(LinkedHashMap<String, Object> map: list) {
-            if(map !=null && map.get(key) != null){
+    private Object firstNotNull(Iterable<LinkedHashMap<String, Object>> list, String key) {
+        for (LinkedHashMap<String, Object> map : list) {
+            if (map != null && map.get(key) != null) {
                 return map.get(key);
             }
         }

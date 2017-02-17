@@ -202,4 +202,14 @@ public class TestTypes extends QueryTypeTest {
         }
     }
 
+    @Test
+    public void ppmi() throws SQLException {
+        Statement stmt = conn.createStatement();
+        ResultSet rs = stmt.executeQuery("ppmi_out");
+        while (rs.next()) {
+            logger.fine("rs: " + rs.getInt("subject_identifier"));
+        }
+    }
+
+
 }

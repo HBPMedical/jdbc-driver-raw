@@ -76,6 +76,10 @@ public class RawRestClient {
         return data;
     }
 
+    public ViewResponse[] getViews() throws IOException {
+        ViewResponse[] data = doGet("/views",ViewResponse[].class);
+        return data;
+    }
 
     public SourceNameResponse[] getSources() throws IOException {
         SourceNameResponse[] data = doGet("/sources",SourceNameResponse[].class);
@@ -86,11 +90,14 @@ public class RawRestClient {
         AsyncQueryRequest request = new AsyncQueryRequest();
         request.query = query;
         AsyncQueryResponse data = doJsonPost("/async-query-start", request, AsyncQueryResponse.class);
+        logger.fine("got id: " + data.queryId );
         return data.queryId;
     }
 
     private AsyncQueryNextResponse asyncQueryNext(AsyncQueryNextRequest request) throws IOException {
-        return doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
+        AsyncQueryNextResponse data = doJsonPost("/async-query-next", request, AsyncQueryNextResponse.class);
+        data.queryId = request.queryId;
+        return data;
     }
 
     public AsyncQueryNextResponse asyncQueryNext(int queryId, int numberOfResults) throws IOException {
@@ -98,6 +105,7 @@ public class RawRestClient {
         request.queryId = queryId;
         request.numberResults = numberOfResults;
         return asyncQueryNext(request);
+
     }
 
     public void asyncQueryClose(int queryId) throws IOException {
@@ -122,6 +130,8 @@ public class RawRestClient {
             if (data.size > 0) {
                 logger.fine("got results: compilation time: " + data.compilationTime +
                         " execution time: " + data.executionTime);
+                data.queryId = queryId;
+                logger.fine("query id: " + data.queryId);
                 return data;
             }
         }
