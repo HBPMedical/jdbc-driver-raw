@@ -90,7 +90,6 @@ public class RawRestClient {
         AsyncQueryRequest request = new AsyncQueryRequest();
         request.query = query;
         AsyncQueryResponse data = doJsonPost("/async-query-start", request, AsyncQueryResponse.class);
-        logger.fine("got id: " + data.queryId );
         return data.queryId;
     }
 
@@ -131,7 +130,6 @@ public class RawRestClient {
                 logger.fine("got results: compilation time: " + data.compilationTime +
                         " execution time: " + data.executionTime);
                 data.queryId = queryId;
-                logger.fine("query id: " + data.queryId);
                 return data;
             }
         }

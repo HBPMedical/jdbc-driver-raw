@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-public class TestTypes extends QueryTypeTest {
+public class TestQueries extends QueryTypeTest {
 
 
-    public TestTypes() throws SQLException {
+    public TestQueries() throws SQLException {
     }
 
     @Test
@@ -203,13 +203,12 @@ public class TestTypes extends QueryTypeTest {
     }
 
     @Test
-    public void ppmi() throws SQLException {
+    public void simpleAggregate() throws SQLException {
         Statement stmt = conn.createStatement();
-        ResultSet rs = stmt.executeQuery("ppmi_out");
-        while (rs.next()) {
-            logger.fine("rs: " + rs.getInt("subject_identifier"));
-        }
+        String query = "count(collection(1,2,3,4))";
+        ResultSet rs = stmt.executeQuery(query);
+        assert(rs.next());
+        assert(rs.getInt(1) == 4);
+        assert(!rs.next());
     }
-
-
 }
