@@ -3,13 +3,11 @@ package raw.jdbc;
 import raw.jdbc.rawclient.RawRestClient;
 import raw.jdbc.rawclient.requests.SourceNameResponse;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -842,18 +840,17 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     //TODO: define better the types of columns
     public ResultSet getTableTypes() throws SQLException {
-        String[][] data = new String[][]{
-                {"view"},
-                {"local_file"},
-                {"local_files"},
-                {"local_directory"},
-                {"http_file"},
-                {"s3_file"},
-                {"s3_directory"},
-                {"hdfs_file"},
-                {"s3_files"},
-                {"rdbms_table"}
-        };
+        // we are getting all unique types, we could just use a fixed list:
+        // String data[][] = new String[][] {{"local_file"}, {"local_files"}, {"local_directory"}, {"http_file"}, {"s3_file"}, {"s3_directory"}, {"hdfs_file"}, {"s3_files"}, {"rdbms_table"}}
+        Set<String> types = new HashSet<String>();
+        for (Table t : tables) {
+            types.add(t.type);
+        }
+        String[][] data = new String[types.size()][1];
+        int n = 0;
+        for (String t : types) {
+            data[n++][0] = t;
+        }
         String[] fields = new String[]{"TABLE_TYPE "};
         return new ArrayResultSet(data, fields);
     }
@@ -869,7 +866,6 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-
         String[] fields = new String[]{
                 "TABLE_CAT", //(String)  table catalog (may be null)
                 "TABLE_SCHEM", //(String)  table schema (may be null)
