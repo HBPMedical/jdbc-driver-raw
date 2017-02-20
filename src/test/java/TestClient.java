@@ -30,6 +30,7 @@ public class TestClient extends RawTest {
         SourceNameResponse[] schemas = client.getSources();
         for (SourceNameResponse s : schemas) {
             System.out.println("got schema: " + s.name);
+            System.out.println("location: " + s.location);
         }
     }
 

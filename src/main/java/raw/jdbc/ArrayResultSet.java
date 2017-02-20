@@ -33,10 +33,12 @@ public class ArrayResultSet implements ResultSet {
         }
     }
 
-    private static Object firstNotNull(Object[][]data, int col){
-        for(Object[] row: data){
-            if(row != null && row[col] != null){
-                return row[col];
+    private static Object firstNotNull(Object[][] data, int col) {
+        for (Object[] row : data) {
+            if (row != null && col < row.length) {
+                if (row[col] != null) {
+                    return row[col];
+                }
             }
         }
         return null;

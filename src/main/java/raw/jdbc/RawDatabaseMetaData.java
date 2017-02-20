@@ -58,11 +58,11 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
                 source.name = s.name;
                 source.schema = "sources";
                 source.catalog = user;
-                source.type = "source";
+                source.type = (String) s.location.get("type");
                 source.columns = typeToColumns(s.tipe);
                 tables.add(source);
             }
-            // gets the sources
+            // gets the views (queries?)
             ViewResponse[] views = this.client.getViews();
             for (ViewResponse v : views) {
                 logger.fine("Metadata adding view: " + v.name);
@@ -764,28 +764,33 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
         throw new SQLFeatureNotSupportedException("not implemented getProcedureColumns");
     }
 
-    private Table[] findTable(String catalog, String schemaPattern, String tableNamePattern, String[] types) {
+    private Table[] findTable(String catalogPattern, String schemaPattern, String tableNamePattern, String[] types) {
         ArrayList<Table> out = new ArrayList<Table>();
         for (Table info : tables) {
-            if (stringMatch(info.name, tableNamePattern)) {
-                //out.add(info);
-                // TODO: check the other types, like views etc.
-                if (types == null) {
-                    out.add(info);
-                } else if (Arrays.asList(types).contains(info.type)) {
-                    out.add(info);
-                }
+            if (!stringMatch(info.catalog, catalogPattern) ||
+                    !stringMatch(info.schema, schemaPattern) ||
+                    !stringMatch(info.name, tableNamePattern)) {
+                continue;
+            }
+
+            // TODO: check the other types, like views etc.
+            if (types == null) {
+                out.add(info);
+            } else if (Arrays.asList(types).contains(info.type)) {
+                out.add(info);
             }
         }
         return out.toArray(new Table[]{});
     }
 
     private static boolean stringMatch(String value, String pattern) {
-        if (pattern != null) {
+        if (pattern == null) {
+            return true;
+        } else if (value == null) {
+            return false;
+        } else {
             String regex = pattern.replaceAll("%", ".*");
             return Pattern.matches(regex, value);
-        } else {
-            return true;
         }
     }
 
@@ -821,7 +826,11 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
     }
 
     public ResultSet getSchemas() throws SQLException {
-        String[][] rsSchemas = new String[][]{{user, user}};
+
+        String[][] rsSchemas = new String[][]{
+                {"sources", user},
+                {"views", user}
+        };
         String[] columnNames = new String[]{"TABLE_SCHEM", "TABLE_CATALOG"};
         return new ArrayResultSet(rsSchemas, columnNames);
     }
@@ -833,7 +842,18 @@ public class RawDatabaseMetaData implements DatabaseMetaData {
 
     //TODO: define better the types of columns
     public ResultSet getTableTypes() throws SQLException {
-        String[][] data = new String[][]{{"source"}, {"view"}};
+        String[][] data = new String[][]{
+                {"view"},
+                {"local_file"},
+                {"local_files"},
+                {"local_directory"},
+                {"http_file"},
+                {"s3_file"},
+                {"s3_directory"},
+                {"hdfs_file"},
+                {"s3_files"},
+                {"rdbms_table"}
+        };
         String[] fields = new String[]{"TABLE_TYPE "};
         return new ArrayResultSet(data, fields);
     }
