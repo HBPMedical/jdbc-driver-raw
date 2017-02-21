@@ -73,17 +73,8 @@ public class ArrayResultSet implements ResultSet {
         Object obj = data[index][columnIndex - 1];
         if (obj == null) {
             valueWasNull = true;
-            if (tClass == Integer.class) {
-                return (T) (Integer) 0;
-            } else if (tClass == Float.class) {
-                return (T) new Float(0.0);
-            } else if (tClass == Short.class) {
-                return (T) new Short((short) 0);
-            } else if (tClass == Boolean.class) {
-                return (T) (Boolean) false;
-            } else {
-                return null;
-            }
+            // Should we return the default vlaues for atomic types? int-0, boolean-false etc..
+            return null;
         } else {
             valueWasNull = false;
             if (tClass == Short.class && obj.getClass() == Integer.class) {

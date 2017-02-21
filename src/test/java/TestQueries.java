@@ -218,7 +218,6 @@ public class TestQueries extends QueryTypeTest {
         String query = "collection(null,2,null,4)";
         ResultSet rs = stmt.executeQuery(query);
         assert(rs.next());
-        assert(rs.getInt(1) == 0);
         assert(rs.getString(1) == null);
         assert(rs.wasNull());
         assert (rs.next());

@@ -166,11 +166,12 @@ public class RawResultSet implements ResultSet {
         if (obj != null) {
             if (isRecord) {
                 LinkedHashMap<String, Object> map = (LinkedHashMap) obj;
-                Object value = map.get(columnLabel);
-                if (value == null) {
+                if(map.containsKey(columnLabel)) {
+                    Object value = map.get(columnLabel);
+                    return castToType(value, tClass);
+                } else {
                     throw new SQLException("could not find column label " + columnLabel);
                 }
-                return castToType(value, tClass);
             } else if (columnLabel == SINGLE_ELEM_LABEL) {
                 return castToType(obj, tClass);
             } else {
@@ -228,19 +229,9 @@ public class RawResultSet implements ResultSet {
     private <T> T castToType(Object obj, Class<T> tClass) {
         try {
             if (obj == null) {
-                // here we are giving the default values from sql in case of NULL
                 valueWasNull = true;
-                if (tClass == Integer.class) {
-                    return (T) (Integer) 0;
-                } else if (tClass == Float.class) {
-                    return (T) new Float(0.0);
-                } else if (tClass == Short.class) {
-                    return (T) new Short((short) 0);
-                } else if (tClass == Boolean.class) {
-                    return (T) (Boolean) false;
-                } else {
-                    return null;
-                }
+                // Should we return the default vlaues for atomic types? int-0, boolean-false etc..
+                return null;
             } else {
                 valueWasNull = false;
                 if (tClass == String.class) {
