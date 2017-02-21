@@ -19,7 +19,6 @@ public class TestArrayResultSet {
                 {null, "1", 10000001L}
         };
         String[] columns = new String[]{"int", "string", "long"};
-        int[] types = new int[]{Types.VARCHAR};
         ArrayResultSet rs = new ArrayResultSet(data, columns);
         assert( rs.next());
         assert(rs.getString(3) == null);
