@@ -28,6 +28,7 @@ public class RawResultSet implements ResultSet {
     private int currentRow = -1;
     private int currentIndex = -1;
     private int resultsPerPage = 1000;
+    private boolean valueWasNull = false;
     public static final String SINGLE_ELEM_LABEL = "element";
 
     private static Logger logger = Logger.getLogger(RawResultSet.class.getName());
@@ -116,14 +117,13 @@ public class RawResultSet implements ResultSet {
     }
 
     public boolean wasNull() throws SQLException {
-        return false;
+        return valueWasNull;
     }
 
     private Object getCurrentObj() {
         if (currentIndex < 0) {
             return null;
         } else {
-
             return query.data.get(currentIndex);
         }
     }
@@ -139,9 +139,6 @@ public class RawResultSet implements ResultSet {
      */
     private <T> T castFromColIndex(int columnIndex, Class<T> tClass) throws SQLException {
         Object obj = getCurrentObj();
-        if (obj == null) {
-            return null;
-        }
 
         int idx = columnIndex - 1;
         if (isRecord) {
@@ -231,20 +228,36 @@ public class RawResultSet implements ResultSet {
     private <T> T castToType(Object obj, Class<T> tClass) {
         try {
             if (obj == null) {
-                return null;
-            } else if (tClass == String.class) {
-                return (T) obj.toString();
-            } else if (tClass == Float.class) {
-                return (T) new Float((Double) obj);
-            } else if (tClass == BigDecimal.class) {
-                return (T) BigDecimal.valueOf((Double) obj);
-            } else if (tClass.isArray()) {
-                return transformArray((ArrayList) obj, tClass);
-            } else if (tClass == Long.class && obj.getClass() == Integer.class) {
-                return (T) new Long((Integer) obj);
+                // here we are giving the default values from sql in case of NULL
+                valueWasNull = true;
+                if (tClass == Integer.class) {
+                    return (T) (Integer) 0;
+                } else if (tClass == Float.class) {
+                    return (T) new Float(0.0);
+                } else if (tClass == Short.class) {
+                    return (T) new Short((short) 0);
+                } else if (tClass == Boolean.class) {
+                    return (T) (Boolean) false;
+                } else {
+                    return null;
+                }
             } else {
-                return (T) obj;
+                valueWasNull = false;
+                if (tClass == String.class) {
+                    return (T) obj.toString();
+                } else if (tClass == Float.class) {
+                    return (T) new Float((Double) obj);
+                } else if (tClass == BigDecimal.class) {
+                    return (T) BigDecimal.valueOf((Double) obj);
+                } else if (tClass.isArray()) {
+                    return transformArray((ArrayList) obj, tClass);
+                } else if (tClass == Long.class && obj.getClass() == Integer.class) {
+                    return (T) new Long((Integer) obj);
+                } else {
+                    return (T) obj;
+                }
             }
+
         } catch (ClassCastException e) {
             throw new ClassCastException(obj.getClass().getName() + " cannot be converted to " + tClass.getName());
         }

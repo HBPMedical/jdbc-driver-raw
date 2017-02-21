@@ -16,7 +16,7 @@ public class ArrayResultSet implements ResultSet {
     private Object[][] data;
     private Map<String, Integer> names;
     private int[] types;
-
+    private boolean valueWasNull = false;
     private int index = -1;
 
     public ArrayResultSet(Object[][] data, String[] columnNames) throws SQLException {
@@ -35,10 +35,8 @@ public class ArrayResultSet implements ResultSet {
 
     private static Object firstNotNull(Object[][] data, int col) {
         for (Object[] row : data) {
-            if (row != null && col < row.length) {
-                if (row[col] != null) {
-                    return row[col];
-                }
+            if (row != null && col < row.length && row[col] != null) {
+                return row[col];
             }
         }
         return null;
@@ -73,14 +71,30 @@ public class ArrayResultSet implements ResultSet {
             next();
         }
         Object obj = data[index][columnIndex - 1];
-        if (tClass == Short.class && obj.getClass() == Integer.class) {
-            Integer i = (Integer) obj;
-            return (T) (Short) i.shortValue();
-        } else if (tClass == Byte.class && obj.getClass() == Integer.class) {
-            Integer i = (Integer) obj;
-            return (T) (Byte) i.byteValue();
+        if (obj == null) {
+            valueWasNull = true;
+            if (tClass == Integer.class) {
+                return (T) (Integer) 0;
+            } else if (tClass == Float.class) {
+                return (T) new Float(0.0);
+            } else if (tClass == Short.class) {
+                return (T) new Short((short) 0);
+            } else if (tClass == Boolean.class) {
+                return (T) (Boolean) false;
+            } else {
+                return null;
+            }
         } else {
-            return (T) obj;
+            valueWasNull = false;
+            if (tClass == Short.class && obj.getClass() == Integer.class) {
+                Integer i = (Integer) obj;
+                return (T) (Short) i.shortValue();
+            } else if (tClass == Byte.class && obj.getClass() == Integer.class) {
+                Integer i = (Integer) obj;
+                return (T) (Byte) i.byteValue();
+            } else {
+                return (T) obj;
+            }
         }
     }
 
@@ -99,7 +113,7 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public boolean wasNull() throws SQLException {
-        return false;
+        return valueWasNull;
     }
 
     public String getString(int columnIndex) throws SQLException {
@@ -341,7 +355,8 @@ public class ArrayResultSet implements ResultSet {
     }
 
     public int getType() throws SQLException {
-        return 0;
+        //TODO: We can be scrollable for sure, check the scrollable interface
+        return ResultSet.TYPE_FORWARD_ONLY;
     }
 
     public int getConcurrency() throws SQLException {

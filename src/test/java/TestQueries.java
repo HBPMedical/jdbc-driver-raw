@@ -211,4 +211,18 @@ public class TestQueries extends QueryTypeTest {
         assert(rs.getInt(1) == 4);
         assert(!rs.next());
     }
+
+    @Test
+    public void testNulls() throws SQLException {
+        Statement stmt = conn.createStatement();
+        String query = "collection(null,2,null,4)";
+        ResultSet rs = stmt.executeQuery(query);
+        assert(rs.next());
+        assert(rs.getInt(1) == 0);
+        assert(rs.getString(1) == null);
+        assert(rs.wasNull());
+        assert (rs.next());
+        assert(rs.getInt(1) == 2);
+        assert(!rs.wasNull());
+    }
 }
